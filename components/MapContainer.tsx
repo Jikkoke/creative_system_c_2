@@ -6,8 +6,8 @@ import data from '@/data/spots.json';
 const containerStyle = { width: '100%', height: '65vh', borderRadius: '0 0 30px 30px' };
 const KYODA_STATION = { lat: 26.5478, lng: 127.9675 }; // 許田駅座標
 
-export default function MapContainer({ isStarted, onArrival }: { isStarted: boolean, onArrival: () => void }) {
-  const { isLoaded } = useJsApiLoader({
+// isDisasterMode（省略可能）を受け取れるように型（Type）を追加
+export default function MapContainer({ isStarted, onArrival, isDisasterMode }: { isStarted: boolean, onArrival: () => void, isDisasterMode?: boolean }) {  const { isLoaded } = useJsApiLoader({
   id: 'google-map-script', // ここをエラーメッセージのどちらかに合わせる
   googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string,
   libraries: ['places'],
