@@ -1,0 +1,13 @@
+{
+  "parking": {
+    "name": "名護市営駐車場（推奨）",
+    "lat": 26.5915,
+    "lng": 127.9845,
+    "address": "沖縄県名護市城１丁目"
+  },
+  "shops": [
+    { "id": "wa-tacos", "name": "和タコス", "lat": 26.5916, "lng": 127.9840, "scent": "シークワーサー" },
+    { "id": "hey-burger", "name": "HEY BURGER", "lat": 26.5920, "lng": 127.9845, "scent": "潮風" },
+    { "id": "nakamura", "name": "なかむら製菓", "lat": 26.5925, "lng": 127.9850, "scent": "甘い伝統" }
+  ]
+}
