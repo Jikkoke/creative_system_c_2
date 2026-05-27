@@ -23,6 +23,8 @@ const ARRIVAL_RADIUS_M = 100;          // 駐車場到着判定
 const SPOT_APPROACH_M = 200;           // スポット接近イベント
 const ROUTE_RECALC_THRESHOLD_M = 100;  // ルート再計算する移動距離
 const PARKING_POLL_INTERVAL_MS = 30_000;
+const WALK_SPEED_M_PER_MIN = 80;       // 徒歩速度（距離 → 分の概算用）
+const MAX_TRIP_SPOTS = 5;              // 周遊コースの最大選択数
 
 // ─── 型定義 ──────────────────────────────────────────────────────────────────
 
@@ -41,7 +43,11 @@ type Spot = {
   imageUrl?: string;
   address?: string;
   goodsPickup?: boolean;
+  hours?: string;        // "HH:MM-HH:MM" 例 "11:00-18:00"
+  closedDays?: number[]; // 0=日, 6=土（Date.getDay()基準）
 };
+
+type OpenStatus = 'open' | 'closed' | 'closed-today' | 'unknown';
 
 type Shelter = {
   id: number;
@@ -143,6 +149,33 @@ function nearestShelter(loc: LatLng): Shelter | null {
   , SHELTERS[0]);
 }
 
+function formatDistanceToWalk(meters: number): string {
+  const mins = Math.max(1, Math.round(meters / WALK_SPEED_M_PER_MIN));
+  if (meters < 1000) return `🚶 約${mins}分（${Math.round(meters)}m）`;
+  return `🚶 約${mins}分（${(meters / 1000).toFixed(1)}km）`;
+}
+
+function parseHHMM(s: string): number | null {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(s);
+  if (!m) return null;
+  const h = Number(m[1]);
+  const min = Number(m[2]);
+  if (h < 0 || h > 24 || min < 0 || min >= 60) return null;
+  return h * 60 + min;
+}
+
+function getOpenStatus(spot: Spot, now: Date = new Date()): OpenStatus {
+  if (!spot.hours) return 'unknown';
+  const day = now.getDay();
+  if (spot.closedDays?.includes(day)) return 'closed-today';
+  const [openStr, closeStr] = spot.hours.split('-');
+  const openMin = openStr ? parseHHMM(openStr) : null;
+  const closeMin = closeStr ? parseHHMM(closeStr) : null;
+  if (openMin == null || closeMin == null) return 'unknown';
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  return nowMin >= openMin && nowMin < closeMin ? 'open' : 'closed';
+}
+
 type LogEvent = 'LAUNCH' | 'GOODS_RECEIVED' | 'SKIP_GOODS' | 'SPOT_SELECT' | 'APPROACH_200M';
 
 async function logEvent(event: LogEvent, payload?: Record<string, unknown>) {
@@ -180,6 +213,29 @@ function buildIcon(fillColor: string): google.maps.Symbol {
 
 const MAP_CONTAINER_STYLE: React.CSSProperties = { width: '100%', height: '100dvh' };
 
+// ─── サブコンポーネント ──────────────────────────────────────────────────────
+
+const OPEN_STATUS_STYLES: Record<Exclude<OpenStatus, 'unknown'>, string> = {
+  'open': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  'closed': 'bg-gray-50 text-gray-500 border-gray-200',
+  'closed-today': 'bg-red-50 text-red-600 border-red-200',
+};
+const OPEN_STATUS_LABELS: Record<Exclude<OpenStatus, 'unknown'>, string> = {
+  'open': '営業中',
+  'closed': '営業時間外',
+  'closed-today': '本日休業',
+};
+
+function OpenBadge({ spot, now }: { spot: Spot; now: Date }) {
+  const st = getOpenStatus(spot, now);
+  if (st === 'unknown') return null;
+  return (
+    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${OPEN_STATUS_STYLES[st]}`}>
+      {OPEN_STATUS_LABELS[st]}
+    </span>
+  );
+}
+
 // ─── メインコンポーネント ────────────────────────────────────────────────────
 
 export default function HomePage() {
@@ -192,6 +248,16 @@ export default function HomePage() {
   const [isSpotNavigating, setIsSpotNavigating] = useState(false);
   const [popupSpot, setPopupSpot] = useState<Spot | null>(null);
   const [selectedGoodsSpot, setSelectedGoodsSpot] = useState<Spot | null>(null);
+  const [tripSpots, setTripSpots] = useState<Spot[]>([]);
+  const [isTripActive, setIsTripActive] = useState(false);
+  const [tripDuration, setTripDuration] = useState<string | null>(null);
+
+  // 「現在時刻」を1分ごとに進める（営業中判定のリアルタイム更新用）
+  const [nowTick, setNowTick] = useState<number>(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNowTick(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
 
   // 位置・ルート状態
   // userLocation: マーカー表示用（常時更新）
@@ -424,6 +490,46 @@ export default function HomePage() {
       return () => { cancelled = true; };
     }
 
+    // 周遊コース：複数スポットを順に徒歩で巡る
+    if (status === 'completed' && isTripActive && tripSpots.length >= 2) {
+      const finalDest = tripSpots[tripSpots.length - 1];
+      const waypoints: google.maps.DirectionsWaypoint[] = tripSpots
+        .slice(0, -1)
+        .map((s) => ({
+          location: new google.maps.LatLng(s.lat, s.lng),
+          stopover: true,
+        }));
+      svc.route(
+        {
+          origin,
+          destination: { lat: finalDest.lat, lng: finalDest.lng },
+          waypoints,
+          travelMode: google.maps.TravelMode.WALKING,
+          optimizeWaypoints: false,
+        },
+        (result, stat) => {
+          if (cancelled) return;
+          if (stat === 'OK' && result) {
+            setDirections(result);
+            const totalSec = (result.routes[0]?.legs ?? []).reduce(
+              (sum, leg) => sum + (leg.duration?.value ?? 0), 0
+            );
+            const totalMin = Math.max(1, Math.round(totalSec / 60));
+            setTripDuration(`約${totalMin}分`);
+            setWalkingDuration(null);
+            setDrivingDuration(null);
+            setRouteError(null);
+            fitMap(result);
+          } else {
+            setDirections(null);
+            setTripDuration(null);
+            setRouteError('周遊ルートを取得できませんでした');
+          }
+        }
+      );
+      return () => { cancelled = true; };
+    }
+
     // スポット詳細・案内中：徒歩ルートをマップ表示 ＋ 車時間も取得
     if (status === 'completed' && selectedSpot) {
       const dest = { lat: selectedSpot.lat, lng: selectedSpot.lng };
@@ -459,7 +565,7 @@ export default function HomePage() {
     setDrivingDuration(null);
     setWalkingDuration(null);
     setRouteError(null);
-  }, [isLoaded, routeOrigin, isDisasterMode, status, selectedSpot, selectedGoodsSpot]);
+  }, [isLoaded, routeOrigin, isDisasterMode, status, selectedSpot, selectedGoodsSpot, isTripActive, tripSpots]);
 
   // ── アクションハンドラ ─────────────────────────────────────────────────
 
@@ -469,6 +575,9 @@ export default function HomePage() {
     setSelectedGoodsSpot(null);
     setShowSpotDetail(false);
     setIsSpotNavigating(false);
+    setTripSpots([]);
+    setIsTripActive(false);
+    setTripDuration(null);
     setDirections(null);
     setDrivingDuration(null);
     setWalkingDuration(null);
@@ -476,6 +585,42 @@ export default function HomePage() {
     setIsNearDestination(false);
     setPopupSpot(null);
     approachFiredRef.current.clear();
+  };
+
+  const handleToggleTripSpot = (spot: Spot) => {
+    setTripSpots((prev) => {
+      const has = prev.some((s) => s.id === spot.id);
+      if (has) return prev.filter((s) => s.id !== spot.id);
+      if (prev.length >= MAX_TRIP_SPOTS) return prev;
+      return [...prev, spot];
+    });
+  };
+
+  const handleStartTrip = () => {
+    if (tripSpots.length < 2) return;
+    setIsTripActive(true);
+    setShowSpotDetail(false);
+    setIsSpotNavigating(false);
+    setSelectedSpot(null);
+  };
+
+  const handleEndTrip = () => {
+    setIsTripActive(false);
+    setTripDuration(null);
+    setDirections(null);
+  };
+
+  const handleClearTrip = () => {
+    setTripSpots([]);
+    setIsTripActive(false);
+    setTripDuration(null);
+  };
+
+  const handleRecenter = () => {
+    if (mapRef.current && userLocation) {
+      mapRef.current.panTo(userLocation);
+      mapRef.current.setZoom(16);
+    }
   };
 
   const handleSelectGoodsSpot = (spot: Spot) => {
@@ -532,6 +677,10 @@ export default function HomePage() {
     setDrivingDuration(null);
     setWalkingDuration(null);
   };
+
+  // 距離計算の基準点（GPS優先、未取得なら駐車場）
+  const distanceRef: LatLng = userLocation ?? NAGO_PARKING;
+  const now = useMemo(() => new Date(nowTick), [nowTick]);
 
   const isUsingFallbackOrigin = !routeOrigin && !isDisasterMode;
 
@@ -662,6 +811,17 @@ export default function HomePage() {
           className="absolute top-4 left-4 z-30 w-11 h-11 flex items-center justify-center rounded-full bg-white text-gray-700 border border-gray-200 shadow-lg hover:bg-gray-50 active:scale-95 transition-all"
         >
           🏠
+        </button>
+      )}
+
+      {/* ── 現在地に戻るボタン ─────────────────────────────────────────── */}
+      {userLocation && (
+        <button
+          onClick={handleRecenter}
+          aria-label="現在地に地図を戻す"
+          className="absolute top-20 right-4 z-20 w-11 h-11 flex items-center justify-center rounded-full bg-white text-blue-600 border border-gray-200 shadow-lg hover:bg-blue-50 active:scale-95 transition-all text-lg"
+        >
+          📍
         </button>
       )}
 
@@ -967,11 +1127,62 @@ export default function HomePage() {
             )}
 
             {/* C. 完了：スポット一覧 */}
-            {status === 'completed' && !showSpotDetail && !isSpotNavigating && (
+            {status === 'completed' && !showSpotDetail && !isSpotNavigating && !isTripActive && (
               <div key="completed-list" className="animate-panel-enter">
                 <h2 className="text-lg font-extrabold text-gray-800 mb-4">
                   次はどこへ寄りますか？
                 </h2>
+
+                {/* 周遊コース選択中サマリー */}
+                {tripSpots.length > 0 && (
+                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-2xl space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-bold text-blue-700">
+                        🚶 周遊コース {tripSpots.length}/{MAX_TRIP_SPOTS}軒選択中
+                      </p>
+                      <button
+                        onClick={handleClearTrip}
+                        aria-label="周遊コースをクリア"
+                        className="text-[10px] text-gray-500 hover:text-gray-700 underline"
+                      >
+                        クリア
+                      </button>
+                    </div>
+                    <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+                      {tripSpots.map((s, i) => (
+                        <div
+                          key={s.id}
+                          className="shrink-0 flex items-center gap-1 bg-white border border-blue-200 rounded-full px-2.5 py-1 text-xs"
+                        >
+                          <span className="text-[10px] text-blue-600 font-bold">{i + 1}</span>
+                          <span>{s.emoji}</span>
+                          <span className="font-bold text-gray-700">{s.name}</span>
+                          <button
+                            onClick={() => handleToggleTripSpot(s)}
+                            aria-label={`${s.name}をコースから外す`}
+                            className="ml-1 text-gray-400 hover:text-red-500"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      onClick={handleStartTrip}
+                      disabled={tripSpots.length < 2}
+                      aria-label={tripSpots.length >= 2 ? '選択中の周遊コースで出発' : '2軒以上選んでください'}
+                      className={`w-full py-3 rounded-xl text-white font-bold text-sm transition-all ${
+                        tripSpots.length >= 2
+                          ? 'bg-blue-600 hover:bg-blue-700 active:scale-95 shadow'
+                          : 'bg-gray-300 text-gray-400 cursor-not-allowed'
+                      }`}
+                    >
+                      {tripSpots.length >= 2
+                        ? `🚶 この${tripSpots.length}軒で周遊出発`
+                        : 'あと1軒以上選択してください'}
+                    </button>
+                  </div>
+                )}
 
                 <div className="flex gap-2 mb-4">
                   {(['food', 'shop'] as Genre[]).map((g) => (
@@ -996,22 +1207,109 @@ export default function HomePage() {
                   </p>
                 ) : (
                   <div className="flex gap-3 overflow-x-auto pb-2 snap-x -mx-6 px-6 scrollbar-hide">
-                    {visibleSpots.map((spot) => (
-                      <button
-                        key={spot.id}
-                        onClick={() => handleSelectSpot(spot)}
-                        aria-label={`${spot.name}の詳細を表示`}
-                        className="min-w-[160px] flex-shrink-0 snap-start text-left p-4 bg-gray-50 border border-gray-100 rounded-2xl hover:bg-blue-50 hover:border-blue-200 active:scale-95 transition-all shadow-sm"
-                      >
-                        <span className="text-3xl">{spot.emoji}</span>
-                        <p className="font-bold text-gray-800 text-sm mt-2 leading-tight">{spot.name}</p>
-                        <span className="text-xs text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-md mt-2 inline-block">
-                          {spot.tag}
-                        </span>
-                      </button>
-                    ))}
+                    {visibleSpots.map((spot) => {
+                      const inTrip = tripSpots.some((s) => s.id === spot.id);
+                      const tripFull = tripSpots.length >= MAX_TRIP_SPOTS && !inTrip;
+                      const distMeters = haversine(distanceRef, spot);
+                      return (
+                        <div
+                          key={spot.id}
+                          className={`min-w-[180px] flex-shrink-0 snap-start p-4 rounded-2xl shadow-sm border relative transition-all ${
+                            inTrip
+                              ? 'bg-blue-50 border-blue-300'
+                              : 'bg-gray-50 border-gray-100'
+                          }`}
+                        >
+                          <button
+                            onClick={() => handleToggleTripSpot(spot)}
+                            disabled={tripFull}
+                            aria-label={inTrip ? `${spot.name}をコースから外す` : `${spot.name}をコースに追加`}
+                            className={`absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full text-sm font-bold transition-all ${
+                              inTrip
+                                ? 'bg-blue-600 text-white'
+                                : tripFull
+                                ? 'bg-gray-200 text-gray-300 cursor-not-allowed'
+                                : 'bg-white border border-blue-300 text-blue-600 hover:bg-blue-100'
+                            }`}
+                          >
+                            {inTrip ? '✓' : '+'}
+                          </button>
+                          <button
+                            onClick={() => handleSelectSpot(spot)}
+                            aria-label={`${spot.name}の詳細を表示`}
+                            className="w-full text-left active:scale-95 transition-all"
+                          >
+                            <span className="text-3xl">{spot.emoji}</span>
+                            <p className="font-bold text-gray-800 text-sm mt-2 leading-tight pr-6">
+                              {spot.name}
+                            </p>
+                            <div className="flex flex-wrap gap-1 mt-1.5 items-center">
+                              <span className="text-[10px] text-blue-600 font-bold bg-blue-100 px-1.5 py-0.5 rounded">
+                                {spot.tag}
+                              </span>
+                              <OpenBadge spot={spot} now={now} />
+                            </div>
+                            <p className="text-[11px] text-gray-500 mt-2">
+                              {formatDistanceToWalk(distMeters)}
+                            </p>
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* C-2. 周遊コース実行中 */}
+            {status === 'completed' && isTripActive && (
+              <div key="trip-active" className="space-y-4 animate-panel-enter">
+                <div className="text-center">
+                  <p className="text-xs text-blue-500 font-medium">周遊コース案内中</p>
+                  <h3 className="font-extrabold text-gray-800 text-lg mt-1">
+                    🚶 {tripSpots.length}軒を順に巡る
+                  </h3>
+                  {tripDuration && (
+                    <p className="text-sm text-blue-700 font-bold mt-1 tabular-nums">
+                      合計 {tripDuration}
+                    </p>
+                  )}
+                </div>
+
+                {routeError && (
+                  <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-xl p-3 text-xs">
+                    ⚠️ {routeError}
+                  </div>
+                )}
+
+                <ol className="space-y-2">
+                  {tripSpots.map((s, i) => (
+                    <li
+                      key={s.id}
+                      className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-xl"
+                    >
+                      <span className="w-6 h-6 flex items-center justify-center rounded-full bg-blue-600 text-white text-xs font-bold shrink-0">
+                        {i + 1}
+                      </span>
+                      <span className="text-2xl">{s.emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-gray-800 text-sm truncate">{s.name}</p>
+                        {s.address && (
+                          <p className="text-[10px] text-gray-500 truncate">{s.address}</p>
+                        )}
+                      </div>
+                      <OpenBadge spot={s} now={now} />
+                    </li>
+                  ))}
+                </ol>
+
+                <button
+                  onClick={handleEndTrip}
+                  aria-label="周遊コースを終了して一覧に戻る"
+                  className="w-full py-4 rounded-2xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 active:scale-95 transition-all"
+                >
+                  周遊を終了
+                </button>
               </div>
             )}
 
@@ -1051,7 +1349,22 @@ export default function HomePage() {
                   </span>
                 </div>
 
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <OpenBadge spot={selectedSpot} now={now} />
+                  {selectedSpot.hours && (
+                    <span className="text-[11px] text-gray-500">
+                      🕒 {selectedSpot.hours}
+                      {selectedSpot.closedDays && selectedSpot.closedDays.length > 0 &&
+                        `（${selectedSpot.closedDays.map((d) => ['日','月','火','水','木','金','土'][d]).join('・')}定休）`}
+                    </span>
+                  )}
+                </div>
+
                 <p className="text-gray-500 text-sm leading-relaxed mb-3">{selectedSpot.desc}</p>
+
+                <p className="text-xs text-gray-500 mb-3">
+                  {formatDistanceToWalk(haversine(distanceRef, selectedSpot))}
+                </p>
 
                 {isUsingFallbackOrigin && (
                   <p className="text-xs text-gray-400 mb-2">📍 現在地を測位中（推定値）</p>

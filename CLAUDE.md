@@ -40,7 +40,7 @@ The "skip to spot tour" path goes `initial → completed` directly without selec
 |---|---|
 | [app/page.tsx](app/page.tsx) | Root client component. Owns all state, map, GPS watch, routing, and bottom-sheet UI. |
 | [hooks/useWeatherAlert.ts](hooks/useWeatherAlert.ts) | Fetches JMA warning JSON for Nago city (area code `4720900`) when disaster mode is on. |
-| [data/spots.json](data/spots.json) | 2 parking lots + food/shop spots, validated against Nago lat/lng bounds at load time. Entries with `goodsPickup: true` appear as selectable goods-pickup shops at `initial`. |
+| [data/spots.json](data/spots.json) | 2 parking lots + food/shop spots, validated against Nago lat/lng bounds at load time. Entries with `goodsPickup: true` appear as selectable goods-pickup shops at `initial`. Optional `hours` (`"HH:MM-HH:MM"`) and `closedDays` (`[0..6]`, JS `Date.getDay()` convention) drive the "営業中 / 本日休業" badge. Most hours are approximate placeholders; verify before production. |
 | [data/shelters.json](data/shelters.json) | Evacuation shelters in Nago area, validated at load time. |
 
 ### Routing model
@@ -53,7 +53,8 @@ Per-status routing:
 1. **Disaster mode** (requires GPS) → WALKING to nearest shelter.
 2. **`navigating`** → DRIVING to parking (shown on map) **plus** WALKING duration (info only).
 3. **`walking-to-goods`** → WALKING to `selectedGoodsSpot` (the shop the user chose at `initial`).
-4. **`completed` + spot selected** → WALKING to spot (shown on map) **plus** DRIVING duration (info only).
+4. **`completed` + trip active** → WALKING through 2–5 selected spots as waypoints (`optimizeWaypoints: false`, user-defined order). Total duration is summed from `legs[].duration.value`.
+5. **`completed` + spot selected** → WALKING to spot (shown on map) **plus** DRIVING duration (info only).
 
 When GPS is not yet available, normal-mode routes fall back to `KYODA_ORIGIN` (道の駅許田) so a time estimate appears immediately, with an explicit "測位中…（推定値）" note in the UI.
 
