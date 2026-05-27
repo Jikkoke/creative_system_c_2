@@ -909,13 +909,13 @@ export default function HomePage() {
       ══════════════════════════════════════════════════════════════ */}
       {isDisasterMode && (
         <>
-          <div className="absolute top-4 left-4 right-44 z-20 bg-red-600 text-white px-4 py-3 rounded-2xl shadow-xl animate-bounce">
+          <div className="absolute top-4 left-4 right-44 z-20 bg-red-600 text-white px-4 py-3 rounded-2xl shadow-xl animate-bounce sm:right-auto sm:max-w-md">
             <p className="text-sm font-bold leading-snug">
               ⚠️ 緊急避難警告：現在地付近の高台避難所・AEDを表示中
             </p>
           </div>
 
-          <div className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-6 pb-10 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.2)]">
+          <div className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-6 pb-10 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.2)] max-h-[90vh] overflow-y-auto sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl sm:max-h-[calc(100vh-2rem)]">
             <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-5 space-y-2">
               <p className="text-red-800 font-bold text-sm leading-relaxed">
                 🚨 避難・安全確保を最優先に行動してください。<br />
@@ -955,7 +955,7 @@ export default function HomePage() {
       ══════════════════════════════════════════════════════════════ */}
       {!isDisasterMode && (
         <>
-          <div className={`absolute top-4 right-44 z-10 ${status !== 'initial' ? 'left-20' : 'left-4'}`}>
+          <div className={`absolute top-4 right-44 z-10 sm:right-auto sm:max-w-md ${status !== 'initial' ? 'left-20' : 'left-4'}`}>
             <div
               className={`flex items-center gap-2 px-4 py-3 rounded-2xl shadow-md text-xs font-bold backdrop-blur-sm border ${
                 parkingStatus === 'full'
@@ -989,7 +989,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-6 pb-10 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.15)]">
+          <div className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-6 pb-10 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.15)] max-h-[90vh] overflow-y-auto sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl sm:max-h-[calc(100vh-2rem)]">
 
             {/* ステップインジケーター */}
             {(() => {
