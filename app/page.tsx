@@ -25,6 +25,7 @@ const ROUTE_RECALC_THRESHOLD_M = 100;  // ルート再計算する移動距離
 const PARKING_POLL_INTERVAL_MS = 30_000;
 const WALK_SPEED_M_PER_MIN = 80;       // 徒歩速度（距離 → 分の概算用）
 const MAX_TRIP_SPOTS = 5;              // 周遊コースの最大選択数
+const TRIP_STOP_ARRIVAL_M = 50;        // 周遊コース中の各店舗到着判定（密集を考慮し駐車場より小さく）
 
 // ─── 型定義 ──────────────────────────────────────────────────────────────────
 
@@ -211,6 +212,25 @@ function buildIcon(fillColor: string): google.maps.Symbol {
   };
 }
 
+type TripStopState = 'visited' | 'current' | 'pending';
+
+function buildTripIcon(state: TripStopState): google.maps.Symbol {
+  const config: Record<TripStopState, { color: string; scale: number; opacity: number }> = {
+    visited: { color: '#9ca3af', scale: 12, opacity: 0.7 },
+    current: { color: '#2563eb', scale: 19, opacity: 1.0 },
+    pending: { color: '#60a5fa', scale: 15, opacity: 0.95 },
+  };
+  const c = config[state];
+  return {
+    path: google.maps.SymbolPath.CIRCLE,
+    scale: c.scale,
+    fillColor: c.color,
+    fillOpacity: c.opacity,
+    strokeColor: '#ffffff',
+    strokeWeight: 3,
+  };
+}
+
 const MAP_CONTAINER_STYLE: React.CSSProperties = { width: '100%', height: '100dvh' };
 
 // ─── サブコンポーネント ──────────────────────────────────────────────────────
@@ -251,6 +271,7 @@ export default function HomePage() {
   const [tripSpots, setTripSpots] = useState<Spot[]>([]);
   const [isTripActive, setIsTripActive] = useState(false);
   const [tripDuration, setTripDuration] = useState<string | null>(null);
+  const [tripCurrentIndex, setTripCurrentIndex] = useState(0);
 
   // 「現在時刻」を1分ごとに進める（営業中判定のリアルタイム更新用）
   const [nowTick, setNowTick] = useState<number>(() => Date.now());
@@ -340,6 +361,17 @@ export default function HomePage() {
     );
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
+
+  // ── 周遊コース中、現在の目的地に到着したら自動で次へ進める ─────────
+  useEffect(() => {
+    if (!userLocation || status !== 'completed' || !isTripActive) return;
+    if (tripCurrentIndex >= tripSpots.length) return;
+    const target = tripSpots[tripCurrentIndex];
+    if (haversine(userLocation, target) <= TRIP_STOP_ARRIVAL_M) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- advancing trip stop in response to GPS update from external watchPosition
+      setTripCurrentIndex((i) => i + 1);
+    }
+  }, [userLocation, status, isTripActive, tripCurrentIndex, tripSpots]);
 
   // ── 駐車場ポーリング ────────────────────────────────────────────────────
   useEffect(() => {
@@ -578,6 +610,7 @@ export default function HomePage() {
     setTripSpots([]);
     setIsTripActive(false);
     setTripDuration(null);
+    setTripCurrentIndex(0);
     setDirections(null);
     setDrivingDuration(null);
     setWalkingDuration(null);
@@ -599,6 +632,7 @@ export default function HomePage() {
   const handleStartTrip = () => {
     if (tripSpots.length < 2) return;
     setIsTripActive(true);
+    setTripCurrentIndex(0);
     setShowSpotDetail(false);
     setIsSpotNavigating(false);
     setSelectedSpot(null);
@@ -607,6 +641,7 @@ export default function HomePage() {
   const handleEndTrip = () => {
     setIsTripActive(false);
     setTripDuration(null);
+    setTripCurrentIndex(0);
     setDirections(null);
   };
 
@@ -614,6 +649,11 @@ export default function HomePage() {
     setTripSpots([]);
     setIsTripActive(false);
     setTripDuration(null);
+    setTripCurrentIndex(0);
+  };
+
+  const handleAdvanceTripStop = () => {
+    setTripCurrentIndex((i) => Math.min(i + 1, tripSpots.length));
   };
 
   const handleRecenter = () => {
@@ -746,6 +786,7 @@ export default function HomePage() {
             {/* スポット・駐車場マーカー（completed 時） */}
             {status === 'completed' && !isDisasterMode && (
               <>
+                {/* 駐車場マーカーは常時表示 */}
                 {SPOTS_BY_CATEGORY.parking.map((spot) => {
                   const s = getMarkerStyle(spot);
                   return (
@@ -759,18 +800,43 @@ export default function HomePage() {
                   );
                 })}
 
-                {visibleSpots.map((spot) => {
-                  const s = getMarkerStyle(spot);
-                  return (
-                    <Marker
-                      key={spot.id}
-                      position={{ lat: spot.lat, lng: spot.lng }}
-                      icon={buildIcon(s.fillColor)}
-                      label={{ text: s.label, color: 'white', fontWeight: 'bold', fontSize: '10px' }}
-                      onClick={() => setPopupSpot(spot)}
-                    />
-                  );
-                })}
+                {/* 周遊コース中：コース内スポットだけ番号付きで強調 */}
+                {isTripActive ? (
+                  tripSpots.map((spot, i) => {
+                    const state: TripStopState =
+                      i < tripCurrentIndex ? 'visited' :
+                      i === tripCurrentIndex ? 'current' :
+                      'pending';
+                    return (
+                      <Marker
+                        key={spot.id}
+                        position={{ lat: spot.lat, lng: spot.lng }}
+                        icon={buildTripIcon(state)}
+                        label={{
+                          text: state === 'visited' ? '✓' : String(i + 1),
+                          color: 'white',
+                          fontWeight: 'bold',
+                          fontSize: state === 'current' ? '13px' : '11px',
+                        }}
+                        zIndex={state === 'current' ? 100 : state === 'pending' ? 50 : 10}
+                        onClick={() => setPopupSpot(spot)}
+                      />
+                    );
+                  })
+                ) : (
+                  visibleSpots.map((spot) => {
+                    const s = getMarkerStyle(spot);
+                    return (
+                      <Marker
+                        key={spot.id}
+                        position={{ lat: spot.lat, lng: spot.lng }}
+                        icon={buildIcon(s.fillColor)}
+                        label={{ text: s.label, color: 'white', fontWeight: 'bold', fontSize: '10px' }}
+                        onClick={() => setPopupSpot(spot)}
+                      />
+                    );
+                  })
+                )}
 
                 {popupSpot && (
                   <InfoWindow
@@ -1262,56 +1328,106 @@ export default function HomePage() {
             )}
 
             {/* C-2. 周遊コース実行中 */}
-            {status === 'completed' && isTripActive && (
-              <div key="trip-active" className="space-y-4 animate-panel-enter">
-                <div className="text-center">
-                  <p className="text-xs text-blue-500 font-medium">周遊コース案内中</p>
-                  <h3 className="font-extrabold text-gray-800 text-lg mt-1">
-                    🚶 {tripSpots.length}軒を順に巡る
-                  </h3>
-                  {tripDuration && (
-                    <p className="text-sm text-blue-700 font-bold mt-1 tabular-nums">
-                      合計 {tripDuration}
-                    </p>
-                  )}
-                </div>
-
-                {routeError && (
-                  <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-xl p-3 text-xs">
-                    ⚠️ {routeError}
-                  </div>
-                )}
-
-                <ol className="space-y-2">
-                  {tripSpots.map((s, i) => (
-                    <li
-                      key={s.id}
-                      className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-xl"
-                    >
-                      <span className="w-6 h-6 flex items-center justify-center rounded-full bg-blue-600 text-white text-xs font-bold shrink-0">
-                        {i + 1}
-                      </span>
-                      <span className="text-2xl">{s.emoji}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-gray-800 text-sm truncate">{s.name}</p>
-                        {s.address && (
-                          <p className="text-[10px] text-gray-500 truncate">{s.address}</p>
+            {status === 'completed' && isTripActive && (() => {
+              const allVisited = tripCurrentIndex >= tripSpots.length;
+              const currentSpot = !allVisited ? tripSpots[tripCurrentIndex] : null;
+              return (
+                <div key="trip-active" className="space-y-4 animate-panel-enter">
+                  <div className="text-center">
+                    {allVisited ? (
+                      <>
+                        <p className="text-xs text-emerald-600 font-medium">🎉 全コース完了</p>
+                        <h3 className="font-extrabold text-gray-800 text-lg mt-1">
+                          おつかれさまでした！
+                        </h3>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-xs text-blue-500 font-medium">
+                          周遊中（{tripCurrentIndex + 1}/{tripSpots.length}軒目）
+                        </p>
+                        <h3 className="font-extrabold text-gray-800 text-lg mt-1">
+                          次は {currentSpot!.emoji} {currentSpot!.name}
+                        </h3>
+                        {tripDuration && (
+                          <p className="text-xs text-gray-500 mt-1 tabular-nums">
+                            コース合計 {tripDuration}
+                          </p>
                         )}
-                      </div>
-                      <OpenBadge spot={s} now={now} />
-                    </li>
-                  ))}
-                </ol>
+                      </>
+                    )}
+                  </div>
 
-                <button
-                  onClick={handleEndTrip}
-                  aria-label="周遊コースを終了して一覧に戻る"
-                  className="w-full py-4 rounded-2xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 active:scale-95 transition-all"
-                >
-                  周遊を終了
-                </button>
-              </div>
-            )}
+                  {routeError && (
+                    <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-xl p-3 text-xs">
+                      ⚠️ {routeError}
+                    </div>
+                  )}
+
+                  <ol className="space-y-2">
+                    {tripSpots.map((s, i) => {
+                      const state =
+                        i < tripCurrentIndex ? 'visited' :
+                        i === tripCurrentIndex ? 'current' :
+                        'pending';
+                      const bgStyles = {
+                        visited: 'bg-gray-100 border-gray-200 opacity-60',
+                        current: 'bg-blue-50 border-blue-400 shadow-md ring-2 ring-blue-200',
+                        pending: 'bg-gray-50 border-gray-100',
+                      }[state];
+                      const badgeStyles = {
+                        visited: 'bg-gray-300 text-white',
+                        current: 'bg-blue-600 text-white animate-pulse',
+                        pending: 'bg-gray-300 text-white',
+                      }[state];
+                      return (
+                        <li
+                          key={s.id}
+                          className={`flex items-center gap-3 p-3 border rounded-xl transition-all ${bgStyles}`}
+                        >
+                          <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold shrink-0 ${badgeStyles}`}>
+                            {state === 'visited' ? '✓' : i + 1}
+                          </span>
+                          <span className={`text-2xl ${state === 'visited' ? 'grayscale' : ''}`}>{s.emoji}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className={`font-bold text-sm truncate ${
+                              state === 'visited' ? 'text-gray-500 line-through' : 'text-gray-800'
+                            }`}>
+                              {s.name}
+                            </p>
+                            {state === 'current' && (
+                              <p className="text-[10px] text-blue-600 font-bold mt-0.5">⬅️ 次はここ</p>
+                            )}
+                            {state === 'visited' && (
+                              <p className="text-[10px] text-gray-400 mt-0.5">訪問済み</p>
+                            )}
+                          </div>
+                          {state !== 'visited' && <OpenBadge spot={s} now={now} />}
+                        </li>
+                      );
+                    })}
+                  </ol>
+
+                  {!allVisited && currentSpot && (
+                    <button
+                      onClick={handleAdvanceTripStop}
+                      aria-label={`${currentSpot.name}に到着して次の店へ進む`}
+                      className="w-full py-4 rounded-2xl bg-emerald-500 text-white font-bold shadow-lg hover:bg-emerald-600 active:scale-95 transition-all"
+                    >
+                      ✅ {currentSpot.name}に到着・次へ
+                    </button>
+                  )}
+
+                  <button
+                    onClick={handleEndTrip}
+                    aria-label="周遊コースを終了して一覧に戻る"
+                    className="w-full py-3 rounded-2xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 active:scale-95 transition-all"
+                  >
+                    {allVisited ? '一覧に戻る' : '周遊を終了'}
+                  </button>
+                </div>
+              );
+            })()}
 
             {/* D. スポット詳細 */}
             {status === 'completed' && showSpotDetail && selectedSpot && (
