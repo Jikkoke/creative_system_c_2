@@ -6,16 +6,25 @@ import {
   useJsApiLoader,
   DirectionsRenderer,
   Marker,
+  InfoWindow,
 } from '@react-google-maps/api';
 import sheltersData from '@/data/shelters.json';
+import spotsData from '@/data/spots.json';
+import { useWeatherAlert } from '@/hooks/useWeatherAlert';
 
 // ─── 静的データ ──────────────────────────────────────────────────────────────
 
 const KYODA_ORIGIN = { lat: 26.6478, lng: 128.0196 }; // 道の駅許田（起点）
 const NAGO_PARKING = { lat: 26.5915, lng: 127.9845 }; // 名護市営駐車場（目的地）
 
+// ─── 型定義 ──────────────────────────────────────────────────────────────────
+
+type Category = 'parking' | 'food' | 'shop';
+
 type Spot = {
   id: string;
+  category: Category;
+  primary?: boolean;
   name: string;
   lat: number;
   lng: number;
@@ -23,6 +32,7 @@ type Spot = {
   desc: string;
   tag: string;
   imageUrl?: string;
+  address?: string;
 };
 
 type Shelter = {
@@ -33,39 +43,44 @@ type Shelter = {
   lng: number;
 };
 
-const SHELTERS: Shelter[] = sheltersData;
+type Status = 'initial' | 'navigating' | 'completed';
+type Genre = 'food' | 'shop';
+type ParkingStatus = 'loading' | 'open' | 'full' | 'error';
 
-const SPOTS: Record<'food' | 'shops', Spot[]> = {
-  food: [
-    {
-      id: 'f1', name: '名護そば きん食堂', lat: 26.591, lng: 127.978, emoji: '🍜',
-      desc: '地元民が通う老舗。コクのある出汁の名護そばが人気。昔ながらの製法で打つ自家製麺が絶品。',
-      tag: '#地元グルメ',
-      imageUrl: '/images/spots/f1-nago-soba.jpg',
-    },
-    {
-      id: 'f2', name: 'シークワーサーカフェ 北部の香り', lat: 26.593, lng: 127.976, emoji: '🍹',
-      desc: '名護産シークワーサーを使ったタルトやスムージーが絶品。テラス席から海が見える穴場スポット。',
-      tag: '#カフェ',
-      imageUrl: '/images/spots/f2-cafe.jpg',
-    },
-  ],
-  shops: [
-    {
-      id: 's1', name: '名護お土産センター', lat: 26.592, lng: 127.979, emoji: '🛍️',
-      desc: '沖縄北部エリアのお土産がここに集結。地元限定品も多数取り揃えている。',
-      tag: '#お土産',
-      imageUrl: '/images/spots/s1-omiyage.jpg',
-    },
-    {
-      id: 's2', name: '琉球雑貨 島の宝箱', lat: 26.590, lng: 127.981, emoji: '✨',
-      desc: '職人が作る琉球ガラスや紅型染めが並ぶセレクトショップ。一点物が多く旅の記念に最適。',
-      tag: '#雑貨',
-      imageUrl: '/images/spots/s2-zakka.jpg',
-    },
-  ],
+// ─── spots.json バリデーター ─────────────────────────────────────────────────
+
+const NAGO_BOUNDS = { latMin: 26.4, latMax: 26.7, lngMin: 127.9, lngMax: 128.1 };
+
+function isValidSpot(s: unknown): s is Spot {
+  if (!s || typeof s !== 'object') return false;
+  const sp = s as Spot;
+  return (
+    typeof sp.id === 'string' && sp.id.length > 0 &&
+    typeof sp.name === 'string' && sp.name.length > 0 &&
+    typeof sp.lat === 'number' && typeof sp.lng === 'number' &&
+    sp.lat >= NAGO_BOUNDS.latMin && sp.lat <= NAGO_BOUNDS.latMax &&
+    sp.lng >= NAGO_BOUNDS.lngMin && sp.lng <= NAGO_BOUNDS.lngMax &&
+    ['parking', 'food', 'shop'].includes(sp.category)
+  );
+}
+
+function loadValidSpots(raw: { spots: unknown[] }): Spot[] {
+  const valid: Spot[] = [];
+  for (const e of raw.spots ?? []) {
+    if (isValidSpot(e)) valid.push(e);
+    else console.warn('[spots.json] invalid entry skipped:', e);
+  }
+  return valid;
+}
+
+const ALL_SPOTS: Spot[] = loadValidSpots(spotsData as { spots: unknown[] });
+const SPOTS_BY_CATEGORY = {
+  food: ALL_SPOTS.filter((s) => s.category === 'food'),
+  shop: ALL_SPOTS.filter((s) => s.category === 'shop'),
+  parking: ALL_SPOTS.filter((s) => s.category === 'parking'),
 };
 
+const SHELTERS: Shelter[] = sheltersData;
 
 // ─── GAS エンドポイント（環境変数） ────────────────────────────────────────
 
@@ -93,6 +108,12 @@ function nearestShelter(loc: LatLng): Shelter {
   , SHELTERS[0]);
 }
 
+const WALKING_SPEED_M_PER_MIN = 80;
+
+function walkMinutes(from: LatLng, to: LatLng): number {
+  return haversine(from, to) / WALKING_SPEED_M_PER_MIN;
+}
+
 async function logEvent(
   event: 'LAUNCH' | 'GOODS_RECEIVED' | 'SPOT_SELECT' | 'APPROACH_200M',
   payload?: Record<string, unknown>
@@ -109,11 +130,25 @@ async function logEvent(
   }
 }
 
-// ─── 型定義 ──────────────────────────────────────────────────────────────────
+// ─── マーカースタイル ────────────────────────────────────────────────────────
 
-type Status = 'initial' | 'navigating' | 'completed';
-type Genre = 'food' | 'shops';
-type ParkingStatus = 'loading' | 'open' | 'full' | 'error';
+function getMarkerStyle(spot: Spot): { fillColor: string; label: string } {
+  if (spot.category === 'parking')
+    return { fillColor: '#16a34a', label: spot.primary ? 'P★' : 'P' };
+  if (spot.category === 'food') return { fillColor: '#f59e0b', label: '食' };
+  return { fillColor: '#2563eb', label: '店' };
+}
+
+function buildIcon(fillColor: string): google.maps.Symbol {
+  return {
+    path: google.maps.SymbolPath.CIRCLE,
+    scale: 14,
+    fillColor,
+    fillOpacity: 0.95,
+    strokeColor: '#ffffff',
+    strokeWeight: 2.5,
+  };
+}
 
 const MAP_CONTAINER_STYLE: React.CSSProperties = { width: '100%', height: '100dvh' };
 
@@ -126,6 +161,8 @@ export default function HomePage() {
   const [activeGenre, setActiveGenre] = useState<Genre>('food');
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
   const [showSpotDetail, setShowSpotDetail] = useState(false);
+  const [popupSpot, setPopupSpot] = useState<Spot | null>(null);
+  const [maxMinutes, setMaxMinutes] = useState(30);
 
   // 位置・ルート状態
   const [userLocation, setUserLocation] = useState<LatLng | null>(null);
@@ -142,6 +179,9 @@ export default function HomePage() {
   const approachFiredRef = useRef(new Set<string>());
   const mapRef = useRef<google.maps.Map | null>(null);
 
+  // 気象警報フック（P1）
+  const { weatherAlert } = useWeatherAlert(isDisasterMode);
+
   // Google Maps ロード
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -149,6 +189,12 @@ export default function HomePage() {
     language: 'ja',
     region: 'JP',
   });
+
+  // 表示スポット（時間フィルター済み）
+  const referencePoint: LatLng = userLocation ?? NAGO_PARKING;
+  const visibleSpots = SPOTS_BY_CATEGORY[activeGenre].filter(
+    (s) => walkMinutes(referencePoint, s) <= maxMinutes
+  );
 
   // ── 起動ログ ────────────────────────────────────────────────────────────
   useEffect(() => { logEvent('LAUNCH'); }, []);
@@ -161,14 +207,12 @@ export default function HomePage() {
         const loc: LatLng = { lat: coords.latitude, lng: coords.longitude };
         setUserLocation(loc);
 
-        // navigating 中：100m 以内で到着ボタンを活性化
         if (status === 'navigating') {
           setIsNearDestination(haversine(loc, NAGO_PARKING) <= 100);
         }
 
-        // completed 中：各スポット 200m 以内に接近したらログ送信
         if (status === 'completed') {
-          [...SPOTS.food, ...SPOTS.shops].forEach((spot) => {
+          [...SPOTS_BY_CATEGORY.food, ...SPOTS_BY_CATEGORY.shop].forEach((spot) => {
             if (!approachFiredRef.current.has(spot.id) && haversine(loc, spot) <= 200) {
               approachFiredRef.current.add(spot.id);
               logEvent('APPROACH_200M', { spotId: spot.id, spotName: spot.name });
@@ -188,7 +232,7 @@ export default function HomePage() {
   // ── 駐車場ポーリング（30秒間隔） ────────────────────────────────────────
   const fetchParking = useCallback(async () => {
     if (!GAS_PARKING_URL) {
-      setParkingStatus('open'); // 開発時フォールバック
+      setParkingStatus('open');
       return;
     }
     try {
@@ -214,7 +258,6 @@ export default function HomePage() {
       return;
     }
 
-    // 目的地の決定
     let destination: LatLng | null = null;
     let travelMode: google.maps.TravelMode;
 
@@ -255,6 +298,19 @@ export default function HomePage() {
   useEffect(() => { calculateRoute(); }, [calculateRoute]);
 
   // ── アクションハンドラ ─────────────────────────────────────────────────
+
+  // ホームリセット（P2）
+  const handleReset = useCallback(() => {
+    setStatus('initial');
+    setSelectedSpot(null);
+    setShowSpotDetail(false);
+    setDirections(null);
+    setTravelDuration(null);
+    setIsNearDestination(false);
+    setPopupSpot(null);
+    approachFiredRef.current.clear();
+  }, []);
+
   const handleStartNavigation = () => {
     setStatus('navigating');
     setIsNearDestination(false);
@@ -277,7 +333,7 @@ export default function HomePage() {
   };
 
   const handleStartSpotRoute = () => {
-    setShowSpotDetail(false); // 詳細パネルを閉じ、マップ上のルートを前面に
+    setShowSpotDetail(false);
   };
 
   const handleGenreChange = (genre: Genre) => {
@@ -342,21 +398,66 @@ export default function HomePage() {
                   key={s.id}
                   position={{ lat: s.lat, lng: s.lng }}
                   title={`${s.name}　${s.address}`}
+                  icon={buildIcon('#dc2626')}
                   label={{ text: '避', color: 'white', fontWeight: 'bold', fontSize: '12px' }}
                 />
               ))}
 
-            {/* スポットマーカー（completed 時） */}
-            {status === 'completed' &&
-              !isDisasterMode &&
-              SPOTS[activeGenre].map((spot) => (
-                <Marker
-                  key={spot.id}
-                  position={{ lat: spot.lat, lng: spot.lng }}
-                  title={spot.name}
-                  onClick={() => handleSelectSpot(spot)}
-                />
-              ))}
+            {/* スポット・駐車場マーカー（completed 時） */}
+            {status === 'completed' && !isDisasterMode && (
+              <>
+                {/* 駐車場マーカーは常時表示 */}
+                {SPOTS_BY_CATEGORY.parking.map((spot) => {
+                  const s = getMarkerStyle(spot);
+                  return (
+                    <Marker
+                      key={spot.id}
+                      position={{ lat: spot.lat, lng: spot.lng }}
+                      icon={buildIcon(s.fillColor)}
+                      label={{ text: s.label, color: 'white', fontWeight: 'bold', fontSize: '10px' }}
+                      onClick={() => setPopupSpot(spot)}
+                    />
+                  );
+                })}
+
+                {/* ジャンル別スポットマーカー */}
+                {visibleSpots.map((spot) => {
+                  const s = getMarkerStyle(spot);
+                  return (
+                    <Marker
+                      key={spot.id}
+                      position={{ lat: spot.lat, lng: spot.lng }}
+                      icon={buildIcon(s.fillColor)}
+                      label={{ text: s.label, color: 'white', fontWeight: 'bold', fontSize: '10px' }}
+                      onClick={() => setPopupSpot(spot)}
+                    />
+                  );
+                })}
+
+                {/* InfoWindow */}
+                {popupSpot && (
+                  <InfoWindow
+                    position={{ lat: popupSpot.lat, lng: popupSpot.lng }}
+                    onCloseClick={() => setPopupSpot(null)}
+                  >
+                    <div className="text-sm min-w-[120px]">
+                      <p className="font-bold">{popupSpot.emoji} {popupSpot.name}</p>
+                      {popupSpot.address && (
+                        <p className="text-xs text-gray-500 mt-0.5">{popupSpot.address}</p>
+                      )}
+                      {popupSpot.category !== 'parking' && (
+                        <button
+                          onClick={() => { handleSelectSpot(popupSpot); setPopupSpot(null); }}
+                          className="text-blue-600 text-xs underline mt-1"
+                        >
+                          詳細を見る →
+                        </button>
+                      )}
+                    </div>
+                  </InfoWindow>
+                )}
+              </>
+            )}
           </GoogleMap>
         ) : (
           <div className="w-full h-full bg-gray-200 animate-pulse flex items-center justify-center">
@@ -364,6 +465,17 @@ export default function HomePage() {
           </div>
         )}
       </div>
+
+      {/* ── ホームボタン（P2）: 初期状態以外・通常モード時のみ表示 ─────────── */}
+      {status !== 'initial' && !isDisasterMode && (
+        <button
+          onClick={handleReset}
+          aria-label="ホームに戻る"
+          className="absolute top-4 left-4 z-30 w-11 h-11 flex items-center justify-center rounded-full bg-white text-gray-700 border border-gray-200 shadow-lg hover:bg-gray-50 active:scale-95 transition-all"
+        >
+          🏠
+        </button>
+      )}
 
       {/* ── 防災モード切替ボタン ───────────────────────────────────────── */}
       <button
@@ -403,6 +515,12 @@ export default function HomePage() {
                   <span className="font-extrabold text-base">{travelDuration}</span>
                 </p>
               )}
+              {/* 気象警報バナー（P1） */}
+              {weatherAlert && (
+                <p className="text-red-700 text-xs font-bold leading-snug border-t border-red-200 pt-2">
+                  📡 {weatherAlert}
+                </p>
+              )}
             </div>
             <a
               href="tel:119"
@@ -420,8 +538,8 @@ export default function HomePage() {
       ══════════════════════════════════════════════════════════════ */}
       {!isDisasterMode && (
         <>
-          {/* 駐車場ヘッダー */}
-          <div className="absolute top-4 left-4 right-20 z-10">
+          {/* 駐車場ヘッダー: ホームボタンがある場合は left-20 で衝突回避 */}
+          <div className={`absolute top-4 right-20 z-10 ${status !== 'initial' ? 'left-20' : 'left-4'}`}>
             <div
               className={`flex items-center gap-2 px-4 py-3 rounded-2xl shadow-md text-xs font-bold backdrop-blur-sm border ${
                 parkingStatus === 'full'
@@ -550,9 +668,35 @@ export default function HomePage() {
                   次はどこへ寄りますか？
                 </h2>
 
+                {/* 時間スライダー（P5） */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <label htmlFor="time-slider" className="text-xs font-bold text-gray-600">
+                      ⏱ 到達時間で絞り込み
+                    </label>
+                    <span className="text-xs font-bold text-blue-600 tabular-nums">
+                      {maxMinutes}分以内 / {visibleSpots.length}件
+                    </span>
+                  </div>
+                  <input
+                    id="time-slider"
+                    type="range"
+                    min={5}
+                    max={60}
+                    step={5}
+                    value={maxMinutes}
+                    onChange={(e) => setMaxMinutes(Number(e.target.value))}
+                    aria-label={`徒歩${maxMinutes}分以内のスポットを表示`}
+                    className="w-full accent-blue-600"
+                  />
+                  <div className="flex justify-between text-[10px] text-gray-400 mt-1 tabular-nums">
+                    <span>5分</span><span>30分</span><span>60分</span>
+                  </div>
+                </div>
+
                 {/* ジャンルチップ */}
                 <div className="flex gap-2 mb-4">
-                  {(['food', 'shops'] as Genre[]).map((g) => (
+                  {(['food', 'shop'] as Genre[]).map((g) => (
                     <button
                       key={g}
                       onClick={() => handleGenreChange(g)}
@@ -569,22 +713,28 @@ export default function HomePage() {
                 </div>
 
                 {/* 横スクロールカード */}
-                <div className="flex gap-3 overflow-x-auto pb-2 snap-x -mx-6 px-6 scrollbar-hide">
-                  {SPOTS[activeGenre].map((spot) => (
-                    <button
-                      key={spot.id}
-                      onClick={() => handleSelectSpot(spot)}
-                      aria-label={`${spot.name}の詳細を表示`}
-                      className="min-w-[160px] flex-shrink-0 snap-start text-left p-4 bg-gray-50 border border-gray-100 rounded-2xl hover:bg-blue-50 hover:border-blue-200 active:scale-95 transition-all shadow-sm"
-                    >
-                      <span className="text-3xl">{spot.emoji}</span>
-                      <p className="font-bold text-gray-800 text-sm mt-2 leading-tight">{spot.name}</p>
-                      <span className="text-xs text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-md mt-2 inline-block">
-                        {spot.tag}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+                {visibleSpots.length === 0 ? (
+                  <p className="text-sm text-gray-500 py-6 text-center">
+                    この時間圏内に該当スポットがありません。スライダーを伸ばしてみてください。
+                  </p>
+                ) : (
+                  <div className="flex gap-3 overflow-x-auto pb-2 snap-x -mx-6 px-6 scrollbar-hide">
+                    {visibleSpots.map((spot) => (
+                      <button
+                        key={spot.id}
+                        onClick={() => handleSelectSpot(spot)}
+                        aria-label={`${spot.name}の詳細を表示`}
+                        className="min-w-[160px] flex-shrink-0 snap-start text-left p-4 bg-gray-50 border border-gray-100 rounded-2xl hover:bg-blue-50 hover:border-blue-200 active:scale-95 transition-all shadow-sm"
+                      >
+                        <span className="text-3xl">{spot.emoji}</span>
+                        <p className="font-bold text-gray-800 text-sm mt-2 leading-tight">{spot.name}</p>
+                        <span className="text-xs text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-md mt-2 inline-block">
+                          {spot.tag}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
