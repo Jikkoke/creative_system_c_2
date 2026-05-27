@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import {
   GoogleMap,
   useJsApiLoader,
@@ -16,6 +16,13 @@ import { useWeatherAlert } from '@/hooks/useWeatherAlert';
 
 const KYODA_ORIGIN = { lat: 26.6478, lng: 128.0196 }; // 道の駅許田（起点）
 const NAGO_PARKING = { lat: 26.5915, lng: 127.9845 }; // 名護市営駐車場（目的地）
+
+// ─── しきい値・間隔 ──────────────────────────────────────────────────────────
+
+const ARRIVAL_RADIUS_M = 100;          // 駐車場到着判定
+const SPOT_APPROACH_M = 200;           // スポット接近イベント
+const ROUTE_RECALC_THRESHOLD_M = 100;  // ルート再計算する移動距離
+const PARKING_POLL_INTERVAL_MS = 30_000;
 
 // ─── 型定義 ──────────────────────────────────────────────────────────────────
 
@@ -33,6 +40,7 @@ type Spot = {
   tag: string;
   imageUrl?: string;
   address?: string;
+  goodsPickup?: boolean;
 };
 
 type Shelter = {
@@ -43,13 +51,21 @@ type Shelter = {
   lng: number;
 };
 
-type Status = 'initial' | 'navigating' | 'completed';
+type Status = 'initial' | 'navigating' | 'walking-to-goods' | 'completed';
 type Genre = 'food' | 'shop';
 type ParkingStatus = 'loading' | 'open' | 'full' | 'error';
+type LatLng = { lat: number; lng: number };
 
-// ─── spots.json バリデーター ─────────────────────────────────────────────────
+// ─── バリデーター ────────────────────────────────────────────────────────────
 
 const NAGO_BOUNDS = { latMin: 26.4, latMax: 26.7, lngMin: 127.9, lngMax: 128.1 };
+
+function inNagoBounds(lat: number, lng: number): boolean {
+  return (
+    lat >= NAGO_BOUNDS.latMin && lat <= NAGO_BOUNDS.latMax &&
+    lng >= NAGO_BOUNDS.lngMin && lng <= NAGO_BOUNDS.lngMax
+  );
+}
 
 function isValidSpot(s: unknown): s is Spot {
   if (!s || typeof s !== 'object') return false;
@@ -58,9 +74,19 @@ function isValidSpot(s: unknown): s is Spot {
     typeof sp.id === 'string' && sp.id.length > 0 &&
     typeof sp.name === 'string' && sp.name.length > 0 &&
     typeof sp.lat === 'number' && typeof sp.lng === 'number' &&
-    sp.lat >= NAGO_BOUNDS.latMin && sp.lat <= NAGO_BOUNDS.latMax &&
-    sp.lng >= NAGO_BOUNDS.lngMin && sp.lng <= NAGO_BOUNDS.lngMax &&
+    inNagoBounds(sp.lat, sp.lng) &&
     ['parking', 'food', 'shop'].includes(sp.category)
+  );
+}
+
+function isValidShelter(s: unknown): s is Shelter {
+  if (!s || typeof s !== 'object') return false;
+  const sh = s as Shelter;
+  return (
+    typeof sh.id === 'number' &&
+    typeof sh.name === 'string' && sh.name.length > 0 &&
+    typeof sh.lat === 'number' && typeof sh.lng === 'number' &&
+    inNagoBounds(sh.lat, sh.lng)
   );
 }
 
@@ -73,6 +99,15 @@ function loadValidSpots(raw: { spots: unknown[] }): Spot[] {
   return valid;
 }
 
+function loadValidShelters(raw: unknown[]): Shelter[] {
+  const valid: Shelter[] = [];
+  for (const e of raw ?? []) {
+    if (isValidShelter(e)) valid.push(e);
+    else console.warn('[shelters.json] invalid entry skipped:', e);
+  }
+  return valid;
+}
+
 const ALL_SPOTS: Spot[] = loadValidSpots(spotsData as { spots: unknown[] });
 const SPOTS_BY_CATEGORY = {
   food: ALL_SPOTS.filter((s) => s.category === 'food'),
@@ -80,7 +115,8 @@ const SPOTS_BY_CATEGORY = {
   parking: ALL_SPOTS.filter((s) => s.category === 'parking'),
 };
 
-const SHELTERS: Shelter[] = sheltersData;
+const SHELTERS: Shelter[] = loadValidShelters(sheltersData as unknown[]);
+const GOODS_SPOTS: Spot[] = ALL_SPOTS.filter((s) => s.goodsPickup);
 
 // ─── GAS エンドポイント（環境変数） ────────────────────────────────────────
 
@@ -88,8 +124,6 @@ const GAS_LOG_URL = process.env.NEXT_PUBLIC_GAS_LOG_URL ?? '';
 const GAS_PARKING_URL = process.env.NEXT_PUBLIC_GAS_PARKING_URL ?? '';
 
 // ─── ユーティリティ ──────────────────────────────────────────────────────────
-
-type LatLng = { lat: number; lng: number };
 
 function haversine(a: LatLng, b: LatLng): number {
   const R = 6_371_000;
@@ -102,22 +136,16 @@ function haversine(a: LatLng, b: LatLng): number {
   return R * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 }
 
-function nearestShelter(loc: LatLng): Shelter {
+function nearestShelter(loc: LatLng): Shelter | null {
+  if (SHELTERS.length === 0) return null;
   return SHELTERS.reduce((best, s) =>
     haversine(loc, s) < haversine(loc, best) ? s : best
   , SHELTERS[0]);
 }
 
-const WALKING_SPEED_M_PER_MIN = 80;
+type LogEvent = 'LAUNCH' | 'GOODS_RECEIVED' | 'SKIP_GOODS' | 'SPOT_SELECT' | 'APPROACH_200M';
 
-function walkMinutes(from: LatLng, to: LatLng): number {
-  return haversine(from, to) / WALKING_SPEED_M_PER_MIN;
-}
-
-async function logEvent(
-  event: 'LAUNCH' | 'GOODS_RECEIVED' | 'SPOT_SELECT' | 'APPROACH_200M',
-  payload?: Record<string, unknown>
-) {
+async function logEvent(event: LogEvent, payload?: Record<string, unknown>) {
   if (!GAS_LOG_URL) return;
   try {
     await fetch(GAS_LOG_URL, {
@@ -161,13 +189,19 @@ export default function HomePage() {
   const [activeGenre, setActiveGenre] = useState<Genre>('food');
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
   const [showSpotDetail, setShowSpotDetail] = useState(false);
+  const [isSpotNavigating, setIsSpotNavigating] = useState(false);
   const [popupSpot, setPopupSpot] = useState<Spot | null>(null);
-  const [maxMinutes, setMaxMinutes] = useState(30);
+  const [selectedGoodsSpot, setSelectedGoodsSpot] = useState<Spot | null>(null);
 
   // 位置・ルート状態
+  // userLocation: マーカー表示用（常時更新）
+  // routeOrigin: ルート計算用（しきい値以上動いた時だけ更新）
   const [userLocation, setUserLocation] = useState<LatLng | null>(null);
+  const [routeOrigin, setRouteOrigin] = useState<LatLng | null>(null);
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
-  const [travelDuration, setTravelDuration] = useState<string | null>(null);
+  const [drivingDuration, setDrivingDuration] = useState<string | null>(null);
+  const [walkingDuration, setWalkingDuration] = useState<string | null>(null);
+  const [routeError, setRouteError] = useState<string | null>(null);
   const [isNearDestination, setIsNearDestination] = useState(false);
 
   // 駐車場状態
@@ -176,10 +210,17 @@ export default function HomePage() {
   // 位置情報エラー状態
   const [geoError, setGeoError] = useState<'denied' | 'unavailable' | null>(null);
 
+  // refs
   const approachFiredRef = useRef(new Set<string>());
   const mapRef = useRef<google.maps.Map | null>(null);
+  const statusRef = useRef<Status>(status);
+  const selectedGoodsSpotRef = useRef<Spot | null>(null);
+  const dirSvcRef = useRef<google.maps.DirectionsService | null>(null);
 
-  // 気象警報フック（P1）
+  useEffect(() => { statusRef.current = status; }, [status]);
+  useEffect(() => { selectedGoodsSpotRef.current = selectedGoodsSpot; }, [selectedGoodsSpot]);
+
+  // 気象警報フック
   const { weatherAlert } = useWeatherAlert(isDisasterMode);
 
   // Google Maps ロード
@@ -190,16 +231,12 @@ export default function HomePage() {
     region: 'JP',
   });
 
-  // 表示スポット（時間フィルター済み）
-  const referencePoint: LatLng = userLocation ?? NAGO_PARKING;
-  const visibleSpots = SPOTS_BY_CATEGORY[activeGenre].filter(
-    (s) => walkMinutes(referencePoint, s) <= maxMinutes
-  );
+  const visibleSpots = useMemo(() => SPOTS_BY_CATEGORY[activeGenre], [activeGenre]);
 
   // ── 起動ログ ────────────────────────────────────────────────────────────
   useEffect(() => { logEvent('LAUNCH'); }, []);
 
-  // ── 位置情報ウォッチ ────────────────────────────────────────────────────
+  // ── 位置情報ウォッチ（status非依存）────────────────────────────────────
   useEffect(() => {
     if (!navigator.geolocation) return;
     const watchId = navigator.geolocation.watchPosition(
@@ -207,13 +244,22 @@ export default function HomePage() {
         const loc: LatLng = { lat: coords.latitude, lng: coords.longitude };
         setUserLocation(loc);
 
-        if (status === 'navigating') {
-          setIsNearDestination(haversine(loc, NAGO_PARKING) <= 100);
-        }
+        // 一定距離以上動いた時だけルート再計算をトリガー
+        setRouteOrigin((prev) =>
+          !prev || haversine(loc, prev) > ROUTE_RECALC_THRESHOLD_M ? loc : prev
+        );
 
-        if (status === 'completed') {
+        const cur = statusRef.current;
+        if (cur === 'navigating') {
+          setIsNearDestination(haversine(loc, NAGO_PARKING) <= ARRIVAL_RADIUS_M);
+        }
+        if (cur === 'walking-to-goods') {
+          const goal = selectedGoodsSpotRef.current;
+          setIsNearDestination(!!goal && haversine(loc, goal) <= ARRIVAL_RADIUS_M);
+        }
+        if (cur === 'completed') {
           [...SPOTS_BY_CATEGORY.food, ...SPOTS_BY_CATEGORY.shop].forEach((spot) => {
-            if (!approachFiredRef.current.has(spot.id) && haversine(loc, spot) <= 200) {
+            if (!approachFiredRef.current.has(spot.id) && haversine(loc, spot) <= SPOT_APPROACH_M) {
               approachFiredRef.current.add(spot.id);
               logEvent('APPROACH_200M', { spotId: spot.id, spotName: spot.name });
             }
@@ -227,10 +273,34 @@ export default function HomePage() {
       { enableHighAccuracy: true, timeout: 15_000, maximumAge: 0 }
     );
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [status]);
+  }, []);
 
-  // ── 駐車場ポーリング（30秒間隔） ────────────────────────────────────────
-  const fetchParking = useCallback(async () => {
+  // ── 駐車場ポーリング ────────────────────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      if (!GAS_PARKING_URL) {
+        if (!cancelled) setParkingStatus('open');
+        return;
+      }
+      try {
+        const res = await fetch(GAS_PARKING_URL);
+        const data: { status: string } = await res.json();
+        if (!cancelled) setParkingStatus(data.status === 'full' ? 'full' : 'open');
+      } catch {
+        if (!cancelled) setParkingStatus('error');
+      }
+    };
+    run();
+    const id = setInterval(run, PARKING_POLL_INTERVAL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
+
+  const retryParking = async () => {
+    setParkingStatus('loading');
     if (!GAS_PARKING_URL) {
       setParkingStatus('open');
       return;
@@ -242,107 +312,228 @@ export default function HomePage() {
     } catch {
       setParkingStatus('error');
     }
-  }, []);
+  };
 
+  // ── ルート計算（routeOrigin 変化時のみ）────────────────────────────────
   useEffect(() => {
-    fetchParking();
-    const id = setInterval(fetchParking, 30_000);
-    return () => clearInterval(id);
-  }, [fetchParking]);
+    if (!isLoaded) return;
 
-  // ── ルート計算 ────────────────────────────────────────────────────────
-  const calculateRoute = useCallback(() => {
-    if (!isLoaded || !userLocation) {
-      setDirections(null);
-      setTravelDuration(null);
-      return;
+    if (!dirSvcRef.current) {
+      dirSvcRef.current = new google.maps.DirectionsService();
     }
+    const svc = dirSvcRef.current;
 
-    let destination: LatLng | null = null;
-    let travelMode: google.maps.TravelMode;
+    let cancelled = false;
 
-    if (isDisasterMode) {
-      destination = nearestShelter(userLocation);
-      travelMode = google.maps.TravelMode.WALKING;
-    } else if (status === 'navigating') {
-      destination = NAGO_PARKING;
-      travelMode = google.maps.TravelMode.DRIVING;
-    } else if (status === 'completed' && selectedSpot) {
-      destination = { lat: selectedSpot.lat, lng: selectedSpot.lng };
-      travelMode = google.maps.TravelMode.WALKING;
-    } else {
-      setDirections(null);
-      setTravelDuration(null);
-      return;
-    }
-
-    new google.maps.DirectionsService().route(
-      { origin: userLocation, destination, travelMode },
-      (result, stat) => {
-        if (stat === 'OK' && result) {
-          setDirections(result);
-          setTravelDuration(result.routes[0]?.legs[0]?.duration?.text ?? null);
-          if (mapRef.current && result.routes[0]?.bounds) {
-            mapRef.current.fitBounds(result.routes[0].bounds, {
-              top: 20, right: 20, bottom: 300, left: 20,
-            });
-          }
-        } else {
-          setDirections(null);
-          setTravelDuration(null);
-        }
+    const fitMap = (result: google.maps.DirectionsResult) => {
+      if (mapRef.current && result.routes[0]?.bounds) {
+        mapRef.current.fitBounds(result.routes[0].bounds, {
+          top: 20, right: 20, bottom: 300, left: 20,
+        });
       }
-    );
-  }, [isLoaded, userLocation, isDisasterMode, status, selectedSpot]);
+    };
 
-  useEffect(() => { calculateRoute(); }, [calculateRoute]);
+    // 防災モード：徒歩のみ（GPS必須）
+    if (isDisasterMode) {
+      if (!routeOrigin) {
+        /* eslint-disable react-hooks/set-state-in-effect -- mode switch may need to clear stale route */
+        setDirections(null);
+        setWalkingDuration(null);
+        /* eslint-enable react-hooks/set-state-in-effect */
+        return;
+      }
+      const dest = nearestShelter(routeOrigin);
+      if (!dest) {
+        setDirections(null);
+        setWalkingDuration(null);
+        setRouteError('避難所データを読み込めませんでした');
+        return;
+      }
+      svc.route(
+        { origin: routeOrigin, destination: dest, travelMode: google.maps.TravelMode.WALKING },
+        (result, stat) => {
+          if (cancelled) return;
+          if (stat === 'OK' && result) {
+            setDirections(result);
+            setWalkingDuration(result.routes[0]?.legs[0]?.duration?.text ?? null);
+            setRouteError(null);
+            fitMap(result);
+          } else {
+            setDirections(null);
+            setWalkingDuration(null);
+            setRouteError('避難所までのルート取得に失敗しました');
+          }
+        }
+      );
+      return () => { cancelled = true; };
+    }
+
+    // GPS未取得時は道の駅許田（起点）にフォールバック
+    const origin = routeOrigin ?? KYODA_ORIGIN;
+
+    // 駐車場ナビ：車ルートをマップ表示 ＋ 徒歩時間も取得
+    if (status === 'navigating') {
+      svc.route(
+        { origin, destination: NAGO_PARKING, travelMode: google.maps.TravelMode.DRIVING },
+        (result, stat) => {
+          if (cancelled) return;
+          if (stat === 'OK' && result) {
+            setDirections(result);
+            setDrivingDuration(result.routes[0]?.legs[0]?.duration?.text ?? null);
+            setRouteError(null);
+            fitMap(result);
+          } else {
+            setDirections(null);
+            setDrivingDuration(null);
+            setRouteError('経路を取得できませんでした');
+          }
+        }
+      );
+      svc.route(
+        { origin, destination: NAGO_PARKING, travelMode: google.maps.TravelMode.WALKING },
+        (result, stat) => {
+          if (cancelled) return;
+          setWalkingDuration(
+            stat === 'OK' && result ? (result.routes[0]?.legs[0]?.duration?.text ?? null) : null
+          );
+        }
+      );
+      return () => { cancelled = true; };
+    }
+
+    // 駐車場到着後、選択したグッズ受取スポットへ徒歩
+    if (status === 'walking-to-goods' && selectedGoodsSpot) {
+      const dest = { lat: selectedGoodsSpot.lat, lng: selectedGoodsSpot.lng };
+      svc.route(
+        { origin, destination: dest, travelMode: google.maps.TravelMode.WALKING },
+        (result, stat) => {
+          if (cancelled) return;
+          if (stat === 'OK' && result) {
+            setDirections(result);
+            setWalkingDuration(result.routes[0]?.legs[0]?.duration?.text ?? null);
+            setRouteError(null);
+            fitMap(result);
+          } else {
+            setDirections(null);
+            setWalkingDuration(null);
+            setRouteError('店舗までのルートを取得できませんでした');
+          }
+        }
+      );
+      setDrivingDuration(null);
+      return () => { cancelled = true; };
+    }
+
+    // スポット詳細・案内中：徒歩ルートをマップ表示 ＋ 車時間も取得
+    if (status === 'completed' && selectedSpot) {
+      const dest = { lat: selectedSpot.lat, lng: selectedSpot.lng };
+      svc.route(
+        { origin, destination: dest, travelMode: google.maps.TravelMode.WALKING },
+        (result, stat) => {
+          if (cancelled) return;
+          if (stat === 'OK' && result) {
+            setDirections(result);
+            setWalkingDuration(result.routes[0]?.legs[0]?.duration?.text ?? null);
+            setRouteError(null);
+            fitMap(result);
+          } else {
+            setDirections(null);
+            setWalkingDuration(null);
+            setRouteError('経路を取得できませんでした');
+          }
+        }
+      );
+      svc.route(
+        { origin, destination: dest, travelMode: google.maps.TravelMode.DRIVING },
+        (result, stat) => {
+          if (cancelled) return;
+          setDrivingDuration(
+            stat === 'OK' && result ? (result.routes[0]?.legs[0]?.duration?.text ?? null) : null
+          );
+        }
+      );
+      return () => { cancelled = true; };
+    }
+
+    setDirections(null);
+    setDrivingDuration(null);
+    setWalkingDuration(null);
+    setRouteError(null);
+  }, [isLoaded, routeOrigin, isDisasterMode, status, selectedSpot, selectedGoodsSpot]);
 
   // ── アクションハンドラ ─────────────────────────────────────────────────
 
-  // ホームリセット（P2）
-  const handleReset = useCallback(() => {
+  const handleReset = () => {
     setStatus('initial');
     setSelectedSpot(null);
+    setSelectedGoodsSpot(null);
     setShowSpotDetail(false);
+    setIsSpotNavigating(false);
     setDirections(null);
-    setTravelDuration(null);
+    setDrivingDuration(null);
+    setWalkingDuration(null);
+    setRouteError(null);
     setIsNearDestination(false);
     setPopupSpot(null);
     approachFiredRef.current.clear();
-  }, []);
+  };
 
-  const handleStartNavigation = () => {
+  const handleSelectGoodsSpot = (spot: Spot) => {
+    setSelectedGoodsSpot(spot);
     setStatus('navigating');
+    setIsNearDestination(false);
+    logEvent('SPOT_SELECT', { spotId: spot.id, spotName: spot.name, role: 'goods' });
+  };
+
+  const handleArrivedAtParking = () => {
+    setStatus('walking-to-goods');
     setIsNearDestination(false);
   };
 
   const handleGoToSpotMode = () => {
     setStatus('completed');
-    logEvent('GOODS_RECEIVED');
+    logEvent('SKIP_GOODS');
   };
 
   const handleGoodsReceived = () => {
     setStatus('completed');
-    logEvent('GOODS_RECEIVED');
+    logEvent('GOODS_RECEIVED', {
+      spotId: selectedGoodsSpot?.id,
+      spotName: selectedGoodsSpot?.name,
+    });
   };
 
   const handleSelectSpot = (spot: Spot) => {
     setSelectedSpot(spot);
     setShowSpotDetail(true);
+    setIsSpotNavigating(false);
     logEvent('SPOT_SELECT', { spotId: spot.id, spotName: spot.name });
   };
 
   const handleStartSpotRoute = () => {
     setShowSpotDetail(false);
+    setIsSpotNavigating(true);
+  };
+
+  const handleEndSpotNavigation = () => {
+    setIsSpotNavigating(false);
+    setSelectedSpot(null);
+    setDirections(null);
+    setWalkingDuration(null);
+    setDrivingDuration(null);
   };
 
   const handleGenreChange = (genre: Genre) => {
     setActiveGenre(genre);
     setSelectedSpot(null);
     setShowSpotDetail(false);
+    setIsSpotNavigating(false);
     setDirections(null);
-    setTravelDuration(null);
+    setDrivingDuration(null);
+    setWalkingDuration(null);
   };
+
+  const isUsingFallbackOrigin = !routeOrigin && !isDisasterMode;
 
   // ─── レンダリング ──────────────────────────────────────────────────────────
 
@@ -406,7 +597,6 @@ export default function HomePage() {
             {/* スポット・駐車場マーカー（completed 時） */}
             {status === 'completed' && !isDisasterMode && (
               <>
-                {/* 駐車場マーカーは常時表示 */}
                 {SPOTS_BY_CATEGORY.parking.map((spot) => {
                   const s = getMarkerStyle(spot);
                   return (
@@ -420,7 +610,6 @@ export default function HomePage() {
                   );
                 })}
 
-                {/* ジャンル別スポットマーカー */}
                 {visibleSpots.map((spot) => {
                   const s = getMarkerStyle(spot);
                   return (
@@ -434,7 +623,6 @@ export default function HomePage() {
                   );
                 })}
 
-                {/* InfoWindow */}
                 {popupSpot && (
                   <InfoWindow
                     position={{ lat: popupSpot.lat, lng: popupSpot.lng }}
@@ -466,7 +654,7 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* ── ホームボタン（P2）: 初期状態以外・通常モード時のみ表示 ─────────── */}
+      {/* ── ホームボタン ───────────────────────────────────────────────── */}
       {status !== 'initial' && !isDisasterMode && (
         <button
           onClick={handleReset}
@@ -495,27 +683,30 @@ export default function HomePage() {
       ══════════════════════════════════════════════════════════════ */}
       {isDisasterMode && (
         <>
-          {/* 緊急バナー */}
-          <div className="absolute top-4 left-4 right-20 z-20 bg-red-600 text-white px-4 py-3 rounded-2xl shadow-xl animate-bounce">
+          <div className="absolute top-4 left-4 right-44 z-20 bg-red-600 text-white px-4 py-3 rounded-2xl shadow-xl animate-bounce">
             <p className="text-sm font-bold leading-snug">
               ⚠️ 緊急避難警告：現在地付近の高台避難所・AEDを表示中
             </p>
           </div>
 
-          {/* 防災ボトムパネル */}
           <div className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-6 pb-10 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.2)]">
             <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-5 space-y-2">
               <p className="text-red-800 font-bold text-sm leading-relaxed">
                 🚨 避難・安全確保を最優先に行動してください。<br />
                 落ち着いて、地図上の赤いピン（最寄り避難所）へ向かってください。
               </p>
-              {travelDuration && (
+              {!routeOrigin && (
+                <p className="text-red-700 text-xs font-medium">📍 現在地を測位中…</p>
+              )}
+              {walkingDuration && (
                 <p className="text-red-700 text-sm font-medium">
                   最寄り避難所まで徒歩{' '}
-                  <span className="font-extrabold text-base">{travelDuration}</span>
+                  <span className="font-extrabold text-base">{walkingDuration}</span>
                 </p>
               )}
-              {/* 気象警報バナー（P1） */}
+              {routeError && (
+                <p className="text-red-700 text-xs font-bold">⚠️ {routeError}</p>
+              )}
               {weatherAlert && (
                 <p className="text-red-700 text-xs font-bold leading-snug border-t border-red-200 pt-2">
                   📡 {weatherAlert}
@@ -538,8 +729,7 @@ export default function HomePage() {
       ══════════════════════════════════════════════════════════════ */}
       {!isDisasterMode && (
         <>
-          {/* 駐車場ヘッダー: ホームボタンがある場合は left-20 で衝突回避 */}
-          <div className={`absolute top-4 right-20 z-10 ${status !== 'initial' ? 'left-20' : 'left-4'}`}>
+          <div className={`absolute top-4 right-44 z-10 ${status !== 'initial' ? 'left-20' : 'left-4'}`}>
             <div
               className={`flex items-center gap-2 px-4 py-3 rounded-2xl shadow-md text-xs font-bold backdrop-blur-sm border ${
                 parkingStatus === 'full'
@@ -562,7 +752,7 @@ export default function HomePage() {
                 <div className="flex items-center gap-2 w-full">
                   <span>⚠️ 駐車場情報を取得できませんでした</span>
                   <button
-                    onClick={fetchParking}
+                    onClick={retryParking}
                     aria-label="駐車場情報を再取得する"
                     className="ml-auto shrink-0 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold px-3 py-1 rounded-full transition-colors"
                   >
@@ -573,49 +763,83 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* ボトムパネル */}
           <div className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-6 pb-10 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.15)]">
 
-            {/* ── ステップインジケーター ────────────────────────────── */}
-            <div
-              className="flex items-center justify-center gap-2 mb-5"
-              role="progressbar"
-              aria-label={`ステップ ${status === 'initial' ? 1 : status === 'navigating' ? 2 : 3} / 3`}
-              aria-valuenow={status === 'initial' ? 1 : status === 'navigating' ? 2 : 3}
-              aria-valuemin={1}
-              aria-valuemax={3}
-            >
-              {(['initial', 'navigating', 'completed'] as Status[]).map((s, i) => {
-                const currentStep = status === 'initial' ? 0 : status === 'navigating' ? 1 : 2;
-                return (
-                  <div
-                    key={s}
-                    className={`rounded-full transition-all duration-300 ${
-                      i === currentStep
-                        ? 'w-6 h-2 bg-blue-600'
-                        : i < currentStep
-                        ? 'w-2 h-2 bg-blue-300'
-                        : 'w-2 h-2 bg-gray-200'
-                    }`}
-                  />
-                );
-              })}
-            </div>
+            {/* ステップインジケーター */}
+            {(() => {
+              // navigating と walking-to-goods は同じステップ（受取フェーズ）
+              const step =
+                status === 'initial' ? 1 :
+                status === 'navigating' || status === 'walking-to-goods' ? 2 :
+                3;
+              return (
+                <div
+                  className="flex items-center justify-center gap-2 mb-5"
+                  role="progressbar"
+                  aria-label={`ステップ ${step} / 3`}
+                  aria-valuenow={step}
+                  aria-valuemin={1}
+                  aria-valuemax={3}
+                >
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className={`rounded-full transition-all duration-300 ${
+                        i === step
+                          ? 'w-6 h-2 bg-blue-600'
+                          : i < step
+                          ? 'w-2 h-2 bg-blue-300'
+                          : 'w-2 h-2 bg-gray-200'
+                      }`}
+                    />
+                  ))}
+                </div>
+              );
+            })()}
 
-            {/* ── A. 初期状態 ─────────────────────────────────────── */}
+            {/* A. 初期状態 */}
             {status === 'initial' && (
               <div key="initial" className="space-y-3 animate-panel-enter">
-                <div className="text-center mb-5">
+                <div className="text-center mb-4">
                   <h2 className="text-xl font-extrabold text-gray-800">名護へようこそ！</h2>
                   <p className="text-gray-500 text-sm mt-1">どちらへ向かいますか？</p>
                 </div>
-                <button
-                  onClick={handleStartNavigation}
-                  aria-label="名護市営駐車場へのナビを開始する"
-                  className="w-full py-4 rounded-2xl bg-blue-600 text-white font-bold shadow-lg hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center gap-2"
-                >
-                  <span>🎁</span> グッズを受け取りに出発
-                </button>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-bold text-gray-600 px-1">
+                    🎁 グッズを受け取れるお店を選んでください
+                  </p>
+                  {GOODS_SPOTS.length === 0 ? (
+                    <p className="text-sm text-gray-500 py-3 text-center">
+                      グッズ受取スポットが登録されていません
+                    </p>
+                  ) : (
+                    GOODS_SPOTS.map((spot) => (
+                      <button
+                        key={spot.id}
+                        onClick={() => handleSelectGoodsSpot(spot)}
+                        aria-label={`${spot.name}でグッズを受け取りに向かう`}
+                        className="w-full flex items-center gap-3 p-3 rounded-2xl bg-blue-50 border border-blue-100 hover:bg-blue-100 active:scale-[0.98] transition-all shadow-sm text-left"
+                      >
+                        <span className="text-3xl">{spot.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-gray-800 text-sm leading-tight">{spot.name}</p>
+                          {spot.address && (
+                            <p className="text-[10px] text-gray-500 mt-0.5 truncate">{spot.address}</p>
+                          )}
+                        </div>
+                        <span className="text-blue-600 text-lg shrink-0">›</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3 my-3">
+                  <div className="h-px flex-1 bg-gray-200" />
+                  <span className="text-[10px] text-gray-400">または</span>
+                  <div className="h-px flex-1 bg-gray-200" />
+                </div>
+
                 <button
                   onClick={handleGoToSpotMode}
                   aria-label="グッズ受取をスキップしてスポット観光モードへ"
@@ -626,7 +850,7 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* ── B. 駐車場ナビ中 ──────────────────────────────────── */}
+            {/* B. 駐車場ナビ中 */}
             {status === 'navigating' && (
               <div key="navigating" className="space-y-4 animate-panel-enter">
                 <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-2xl px-4 py-3 text-sm font-bold">
@@ -634,19 +858,54 @@ export default function HomePage() {
                   <span>商店街周辺は路駐禁止です。必ず市営駐車場へ向かってください。</span>
                 </div>
 
-                {travelDuration && (
-                  <div className="bg-blue-50 border border-blue-100 rounded-2xl px-4 py-4 text-center">
-                    <p className="text-xs text-blue-500 font-medium">目的地（市営駐車場）まで</p>
-                    <p className="text-3xl font-extrabold text-blue-700 mt-1 tabular-nums">
-                      {travelDuration}
-                    </p>
+                {isUsingFallbackOrigin && (
+                  <p className="text-xs text-gray-500 text-center">
+                    📍 現在地を測位中…（道の駅許田からの推定値を表示中）
+                  </p>
+                )}
+
+                {routeError && (
+                  <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-xl p-3 text-xs">
+                    ⚠️ {routeError}
+                  </div>
+                )}
+
+                {(drivingDuration || walkingDuration) && (
+                  <div className="bg-blue-50 border border-blue-100 rounded-2xl px-4 py-4">
+                    <p className="text-xs text-blue-500 font-medium text-center mb-3">目的地（市営駐車場）まで</p>
+                    <div className="flex gap-3">
+                      {drivingDuration && (
+                        <div className="flex-1 text-center bg-white rounded-xl py-3 shadow-sm">
+                          <p className="text-xs text-gray-500 mb-1">🚗 車</p>
+                          <p className="text-xl font-extrabold text-blue-700 tabular-nums">{drivingDuration}</p>
+                        </div>
+                      )}
+                      {walkingDuration && (
+                        <div className="flex-1 text-center bg-white rounded-xl py-3 shadow-sm">
+                          <p className="text-xs text-gray-500 mb-1">🚶 徒歩</p>
+                          <p className="text-xl font-extrabold text-blue-700 tabular-nums">{walkingDuration}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {selectedGoodsSpot && (
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 flex items-center gap-3">
+                    <span className="text-2xl">{selectedGoodsSpot.emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] text-emerald-600 font-bold">駐車後に向かう受取スポット</p>
+                      <p className="font-bold text-gray-800 text-sm leading-tight truncate">
+                        {selectedGoodsSpot.name}
+                      </p>
+                    </div>
                   </div>
                 )}
 
                 <button
-                  onClick={handleGoodsReceived}
+                  onClick={handleArrivedAtParking}
                   disabled={!isNearDestination}
-                  aria-label={isNearDestination ? 'グッズを受け取った' : '100m以内に近づくと有効になります'}
+                  aria-label={isNearDestination ? '駐車場に到着した' : '駐車場の100m以内に近づくと有効になります'}
                   className={`w-full py-4 rounded-2xl text-white font-bold shadow-lg transition-all flex items-center justify-center gap-2 ${
                     isNearDestination
                       ? 'bg-emerald-500 hover:bg-emerald-600 active:scale-95'
@@ -655,46 +914,65 @@ export default function HomePage() {
                 >
                   ✅{' '}
                   {isNearDestination
-                    ? '店舗に到着・グッズを受け取った'
-                    : '到着後に有効になります（100m以内）'}
+                    ? '駐車場に到着・お店へ向かう'
+                    : '駐車場到着後に有効になります（100m以内）'}
                 </button>
               </div>
             )}
 
-            {/* ── C. グッズ受取完了：スポット一覧 ──────────────────── */}
-            {status === 'completed' && !showSpotDetail && (
+            {/* B-2. 駐車後：お店へ徒歩 */}
+            {status === 'walking-to-goods' && selectedGoodsSpot && (
+              <div key="walking-to-goods" className="space-y-4 animate-panel-enter">
+                <div className="text-center">
+                  <p className="text-xs text-blue-500 font-medium">受取スポットへ徒歩で向かう</p>
+                  <h3 className="font-extrabold text-gray-800 text-lg mt-1">
+                    {selectedGoodsSpot.emoji} {selectedGoodsSpot.name}
+                  </h3>
+                  {selectedGoodsSpot.address && (
+                    <p className="text-xs text-gray-500 mt-1">{selectedGoodsSpot.address}</p>
+                  )}
+                </div>
+
+                {routeError && (
+                  <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-xl p-3 text-xs">
+                    ⚠️ {routeError}
+                  </div>
+                )}
+
+                {walkingDuration && (
+                  <div className="bg-blue-50 border border-blue-100 rounded-2xl px-4 py-4 text-center">
+                    <p className="text-xs text-blue-500 font-medium">徒歩で到着まで</p>
+                    <p className="text-3xl font-extrabold text-blue-700 mt-1 tabular-nums">
+                      🚶 {walkingDuration}
+                    </p>
+                  </div>
+                )}
+
+                <button
+                  onClick={handleGoodsReceived}
+                  disabled={!isNearDestination}
+                  aria-label={isNearDestination ? 'グッズを受け取った' : `${selectedGoodsSpot.name}の100m以内に近づくと有効になります`}
+                  className={`w-full py-4 rounded-2xl text-white font-bold shadow-lg transition-all flex items-center justify-center gap-2 ${
+                    isNearDestination
+                      ? 'bg-emerald-500 hover:bg-emerald-600 active:scale-95'
+                      : 'bg-gray-300 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  ✅{' '}
+                  {isNearDestination
+                    ? `${selectedGoodsSpot.name}に到着・グッズを受け取った`
+                    : 'お店到着後に有効になります（100m以内）'}
+                </button>
+              </div>
+            )}
+
+            {/* C. 完了：スポット一覧 */}
+            {status === 'completed' && !showSpotDetail && !isSpotNavigating && (
               <div key="completed-list" className="animate-panel-enter">
                 <h2 className="text-lg font-extrabold text-gray-800 mb-4">
                   次はどこへ寄りますか？
                 </h2>
 
-                {/* 時間スライダー（P5） */}
-                <div className="mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <label htmlFor="time-slider" className="text-xs font-bold text-gray-600">
-                      ⏱ 到達時間で絞り込み
-                    </label>
-                    <span className="text-xs font-bold text-blue-600 tabular-nums">
-                      {maxMinutes}分以内 / {visibleSpots.length}件
-                    </span>
-                  </div>
-                  <input
-                    id="time-slider"
-                    type="range"
-                    min={5}
-                    max={60}
-                    step={5}
-                    value={maxMinutes}
-                    onChange={(e) => setMaxMinutes(Number(e.target.value))}
-                    aria-label={`徒歩${maxMinutes}分以内のスポットを表示`}
-                    className="w-full accent-blue-600"
-                  />
-                  <div className="flex justify-between text-[10px] text-gray-400 mt-1 tabular-nums">
-                    <span>5分</span><span>30分</span><span>60分</span>
-                  </div>
-                </div>
-
-                {/* ジャンルチップ */}
                 <div className="flex gap-2 mb-4">
                   {(['food', 'shop'] as Genre[]).map((g) => (
                     <button
@@ -712,10 +990,9 @@ export default function HomePage() {
                   ))}
                 </div>
 
-                {/* 横スクロールカード */}
                 {visibleSpots.length === 0 ? (
                   <p className="text-sm text-gray-500 py-6 text-center">
-                    この時間圏内に該当スポットがありません。スライダーを伸ばしてみてください。
+                    該当するスポットがありません。
                   </p>
                 ) : (
                   <div className="flex gap-3 overflow-x-auto pb-2 snap-x -mx-6 px-6 scrollbar-hide">
@@ -738,7 +1015,7 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* ── D. スポット詳細 ───────────────────────────────────── */}
+            {/* D. スポット詳細 */}
             {status === 'completed' && showSpotDetail && selectedSpot && (
               <div key="completed-detail" className="animate-panel-enter">
                 <button
@@ -749,9 +1026,9 @@ export default function HomePage() {
                   ← 一覧に戻る
                 </button>
 
-                {/* 写真エリア */}
                 <div className="w-full h-40 bg-gradient-to-br from-blue-100 to-indigo-200 rounded-2xl mb-4 overflow-hidden flex items-center justify-center">
                   {selectedSpot.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- external URLs; next/image needs remotePatterns config
                     <img
                       src={selectedSpot.imageUrl}
                       alt={selectedSpot.name}
@@ -776,10 +1053,31 @@ export default function HomePage() {
 
                 <p className="text-gray-500 text-sm leading-relaxed mb-3">{selectedSpot.desc}</p>
 
-                {travelDuration && (
-                  <p className="text-blue-600 text-sm font-bold mb-5">
-                    🚶 徒歩 {travelDuration}
-                  </p>
+                {isUsingFallbackOrigin && (
+                  <p className="text-xs text-gray-400 mb-2">📍 現在地を測位中（推定値）</p>
+                )}
+
+                {routeError && (
+                  <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-xl p-2 text-xs mb-3">
+                    ⚠️ {routeError}
+                  </div>
+                )}
+
+                {(walkingDuration || drivingDuration) && (
+                  <div className="flex gap-3 mb-5">
+                    {walkingDuration && (
+                      <div className="flex-1 text-center bg-blue-50 rounded-xl py-2">
+                        <p className="text-xs text-gray-500">🚶 徒歩</p>
+                        <p className="text-sm font-extrabold text-blue-700 tabular-nums">{walkingDuration}</p>
+                      </div>
+                    )}
+                    {drivingDuration && (
+                      <div className="flex-1 text-center bg-blue-50 rounded-xl py-2">
+                        <p className="text-xs text-gray-500">🚗 車</p>
+                        <p className="text-sm font-extrabold text-blue-700 tabular-nums">{drivingDuration}</p>
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 <button
@@ -788,6 +1086,49 @@ export default function HomePage() {
                   className="w-full py-4 rounded-2xl bg-blue-600 text-white font-bold shadow-lg hover:bg-blue-700 active:scale-95 transition-all"
                 >
                   🗺️ ここへのルートを案内
+                </button>
+              </div>
+            )}
+
+            {/* E. スポットへ案内中 */}
+            {status === 'completed' && isSpotNavigating && selectedSpot && (
+              <div key="completed-navigating" className="space-y-4 animate-panel-enter">
+                <div className="text-center">
+                  <p className="text-xs text-blue-500 font-medium">案内中</p>
+                  <h3 className="font-extrabold text-gray-800 text-lg mt-1">
+                    {selectedSpot.emoji} {selectedSpot.name}
+                  </h3>
+                </div>
+
+                {routeError && (
+                  <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-xl p-3 text-xs">
+                    ⚠️ {routeError}
+                  </div>
+                )}
+
+                {(walkingDuration || drivingDuration) && (
+                  <div className="flex gap-3">
+                    {walkingDuration && (
+                      <div className="flex-1 text-center bg-blue-50 rounded-xl py-3">
+                        <p className="text-xs text-gray-500 mb-1">🚶 徒歩</p>
+                        <p className="text-lg font-extrabold text-blue-700 tabular-nums">{walkingDuration}</p>
+                      </div>
+                    )}
+                    {drivingDuration && (
+                      <div className="flex-1 text-center bg-blue-50 rounded-xl py-3">
+                        <p className="text-xs text-gray-500 mb-1">🚗 車</p>
+                        <p className="text-lg font-extrabold text-blue-700 tabular-nums">{drivingDuration}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <button
+                  onClick={handleEndSpotNavigation}
+                  aria-label="案内を終了して一覧に戻る"
+                  className="w-full py-4 rounded-2xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 active:scale-95 transition-all"
+                >
+                  案内を終了して一覧に戻る
                 </button>
               </div>
             )}

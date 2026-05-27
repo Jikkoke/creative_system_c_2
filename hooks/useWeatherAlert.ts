@@ -7,51 +7,70 @@ const WARNING_LABELS: Record<string, string> = {
   '15': '高潮注意報', '16': '濃霧注意報', '17': '雷注意報'
 };
 
+interface JmaWarning {
+  code: string;
+  status: string;
+}
+
+interface JmaArea {
+  code: string;
+  warnings?: JmaWarning[];
+}
+
+interface JmaAreaType {
+  areas?: JmaArea[];
+}
+
+interface JmaWarningData {
+  areaTypes?: JmaAreaType[];
+}
+
+const NAGO_AREA_CODE = '4720900';
+
 export const useWeatherAlert = (isDisasterMode: boolean) => {
   const [weatherAlert, setWeatherAlert] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isDisasterMode) {
-      setWeatherAlert(null);
-      return;
-    }
+    if (!isDisasterMode) return;
 
-    setWeatherAlert("最新の気象情報を取得中...");
+    let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loading state before async fetch
+    setWeatherAlert('最新の気象情報を取得中...');
+
     fetch('https://www.jma.go.jp/bosai/warning/data/warning/471000.json')
-      .then(res => res.json())
-      .then(data => {
-        try {
-          let nago = null;
-          if (data && data.areaTypes) {
-            for (const areaType of data.areaTypes) {
-              if (areaType.areas) {
-                const target = areaType.areas.find((a: any) => a.code === '4720900');
-                if (target) { nago = target; break; }
-              }
-            }
-          }
+      .then((res) => res.json() as Promise<JmaWarningData>)
+      .then((data) => {
+        if (cancelled) return;
 
-          if (nago && nago.warnings) {
-            const activeWarnings = nago.warnings
-              .filter((w: any) => w.status !== '解除' && w.status !== '発表警報・注意報はなし')
-              .map((w: any) => WARNING_LABELS[w.code] || '警報・注意報');
-
-            if (activeWarnings.length > 0) {
-              const uniqueWarnings = Array.from(new Set(activeWarnings));
-              setWeatherAlert(`【発表中】${uniqueWarnings.join('、')}`);
-            } else {
-              setWeatherAlert("現在、名護市に発表されている気象警報・注意報はありません。");
-            }
-          } else {
-            setWeatherAlert("現在、名護市に発表されている気象警報・注意報はありません。");
+        let nago: JmaArea | null = null;
+        for (const areaType of data?.areaTypes ?? []) {
+          const target = areaType.areas?.find((a) => a.code === NAGO_AREA_CODE);
+          if (target) {
+            nago = target;
+            break;
           }
-        } catch (e) {
-          setWeatherAlert("気象情報の解析に失敗しました。");
+        }
+
+        const warnings = nago?.warnings ?? [];
+        const activeLabels = warnings
+          .filter((w) => w.status !== '解除' && w.status !== '発表警報・注意報はなし')
+          .map((w) => WARNING_LABELS[w.code] ?? '警報・注意報');
+
+        if (activeLabels.length > 0) {
+          const unique = Array.from(new Set(activeLabels));
+          setWeatherAlert(`【発表中】${unique.join('、')}`);
+        } else {
+          setWeatherAlert('現在、名護市に発表されている気象警報・注意報はありません。');
         }
       })
       .catch(() => {
-        setWeatherAlert("通信エラー：オフラインマップと避難所データを表示しています。");
+        if (cancelled) return;
+        setWeatherAlert('通信エラー：オフラインマップと避難所データを表示しています。');
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, [isDisasterMode]);
 
   return { weatherAlert };
