@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   GoogleMap,
   useJsApiLoader,
@@ -300,12 +300,27 @@ export default function HomePage() {
   // refs
   const approachFiredRef = useRef(new Set<string>());
   const mapRef = useRef<google.maps.Map | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const statusRef = useRef<Status>(status);
   const selectedGoodsSpotRef = useRef<Spot | null>(null);
   const dirSvcRef = useRef<google.maps.DirectionsService | null>(null);
 
   useEffect(() => { statusRef.current = status; }, [status]);
   useEffect(() => { selectedGoodsSpotRef.current = selectedGoodsSpot; }, [selectedGoodsSpot]);
+
+  // ルート全体をパネルに隠れないようフィット
+  const fitMapToRoute = useCallback((result: google.maps.DirectionsResult) => {
+    const map = mapRef.current;
+    const bounds = result.routes[0]?.bounds;
+    if (!map || !bounds) return;
+    const panelH = panelRef.current?.offsetHeight ?? 0;
+    map.fitBounds(bounds, {
+      top: 60,
+      right: 40,
+      bottom: panelH + 24,
+      left: 40,
+    });
+  }, []);
 
   // 気象警報フック
   const { weatherAlert } = useWeatherAlert(isDisasterMode);
@@ -423,14 +438,6 @@ export default function HomePage() {
 
     let cancelled = false;
 
-    const fitMap = (result: google.maps.DirectionsResult) => {
-      if (mapRef.current && result.routes[0]?.bounds) {
-        mapRef.current.fitBounds(result.routes[0].bounds, {
-          top: 20, right: 20, bottom: 300, left: 20,
-        });
-      }
-    };
-
     // 防災モード：徒歩のみ（GPS必須）
     if (isDisasterMode) {
       if (!routeOrigin) {
@@ -455,7 +462,7 @@ export default function HomePage() {
             setDirections(result);
             setWalkingDuration(result.routes[0]?.legs[0]?.duration?.text ?? null);
             setRouteError(null);
-            fitMap(result);
+            fitMapToRoute(result);
           } else {
             setDirections(null);
             setWalkingDuration(null);
@@ -479,7 +486,7 @@ export default function HomePage() {
             setDirections(result);
             setDrivingDuration(result.routes[0]?.legs[0]?.duration?.text ?? null);
             setRouteError(null);
-            fitMap(result);
+            fitMapToRoute(result);
           } else {
             setDirections(null);
             setDrivingDuration(null);
@@ -510,7 +517,7 @@ export default function HomePage() {
             setDirections(result);
             setWalkingDuration(result.routes[0]?.legs[0]?.duration?.text ?? null);
             setRouteError(null);
-            fitMap(result);
+            fitMapToRoute(result);
           } else {
             setDirections(null);
             setWalkingDuration(null);
@@ -551,7 +558,7 @@ export default function HomePage() {
             setWalkingDuration(null);
             setDrivingDuration(null);
             setRouteError(null);
-            fitMap(result);
+            fitMapToRoute(result);
           } else {
             setDirections(null);
             setTripDuration(null);
@@ -573,7 +580,7 @@ export default function HomePage() {
             setDirections(result);
             setWalkingDuration(result.routes[0]?.legs[0]?.duration?.text ?? null);
             setRouteError(null);
-            fitMap(result);
+            fitMapToRoute(result);
           } else {
             setDirections(null);
             setWalkingDuration(null);
@@ -597,7 +604,21 @@ export default function HomePage() {
     setDrivingDuration(null);
     setWalkingDuration(null);
     setRouteError(null);
-  }, [isLoaded, routeOrigin, isDisasterMode, status, selectedSpot, selectedGoodsSpot, isTripActive, tripSpots]);
+  }, [isLoaded, routeOrigin, isDisasterMode, status, selectedSpot, selectedGoodsSpot, isTripActive, tripSpots, fitMapToRoute]);
+
+  // リサイズ・パネル高変化時にルートを再フィット
+  useEffect(() => {
+    if (!directions) return;
+    const refit = () => fitMapToRoute(directions);
+    refit();
+    const ro = panelRef.current ? new ResizeObserver(refit) : null;
+    if (ro && panelRef.current) ro.observe(panelRef.current);
+    window.addEventListener('resize', refit);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener('resize', refit);
+    };
+  }, [directions, fitMapToRoute]);
 
   // ── アクションハンドラ ─────────────────────────────────────────────────
 
@@ -915,7 +936,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-6 pb-10 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.2)] max-h-[55dvh] overflow-y-auto sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl sm:max-h-[calc(100vh-2rem)]">
+          <div ref={panelRef} className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-6 pb-10 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.2)] max-h-[50dvh] overflow-y-auto sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl sm:max-h-[50dvh]">
             <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-5 space-y-2">
               <p className="text-red-800 font-bold text-sm leading-relaxed">
                 🚨 避難・安全確保を最優先に行動してください。<br />
@@ -989,7 +1010,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-5 pb-8 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.15)] max-h-[55dvh] overflow-y-auto sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl sm:max-h-[calc(100vh-2rem)]">
+          <div ref={panelRef} className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-5 pb-8 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.15)] max-h-[50dvh] overflow-y-auto sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl sm:max-h-[50dvh]">
 
             {/* ステップインジケーター */}
             {(() => {
