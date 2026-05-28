@@ -915,7 +915,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-6 pb-10 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.2)] max-h-[90vh] overflow-y-auto sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl sm:max-h-[calc(100vh-2rem)]">
+          <div className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-6 pb-10 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.2)] max-h-[55dvh] overflow-y-auto sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl sm:max-h-[calc(100vh-2rem)]">
             <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-5 space-y-2">
               <p className="text-red-800 font-bold text-sm leading-relaxed">
                 🚨 避難・安全確保を最優先に行動してください。<br />
@@ -989,7 +989,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-6 pb-10 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.15)] max-h-[90vh] overflow-y-auto sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl sm:max-h-[calc(100vh-2rem)]">
+          <div className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-5 pb-8 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.15)] max-h-[55dvh] overflow-y-auto sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl sm:max-h-[calc(100vh-2rem)]">
 
             {/* ステップインジケーター */}
             {(() => {
@@ -1000,7 +1000,7 @@ export default function HomePage() {
                 3;
               return (
                 <div
-                  className="flex items-center justify-center gap-2 mb-5"
+                  className="flex items-center justify-center gap-2 mb-4"
                   role="progressbar"
                   aria-label={`ステップ ${step} / 3`}
                   aria-valuenow={step}
@@ -1026,12 +1026,12 @@ export default function HomePage() {
             {/* A. 初期状態 */}
             {status === 'initial' && (
               <div key="initial" className="space-y-3 animate-panel-enter">
-                <div className="text-center mb-4">
+                <div className="text-center mb-3">
                   <h2 className="text-xl font-extrabold text-gray-800">名護へようこそ！</h2>
                   <p className="text-gray-500 text-sm mt-1">どちらへ向かいますか？</p>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <p className="text-xs font-bold text-gray-600 px-1">
                     🎁 グッズを受け取れるお店を選んでください
                   </p>
@@ -1045,9 +1045,9 @@ export default function HomePage() {
                         key={spot.id}
                         onClick={() => handleSelectGoodsSpot(spot)}
                         aria-label={`${spot.name}でグッズを受け取りに向かう`}
-                        className="w-full flex items-center gap-3 p-3 rounded-2xl bg-blue-50 border border-blue-100 hover:bg-blue-100 active:scale-[0.98] transition-all shadow-sm text-left"
+                        className="w-full flex items-center gap-3 p-2.5 rounded-2xl bg-blue-50 border border-blue-100 hover:bg-blue-100 active:scale-[0.98] transition-all shadow-sm text-left"
                       >
-                        <span className="text-3xl">{spot.emoji}</span>
+                        <span className="text-2xl">{spot.emoji}</span>
                         <div className="flex-1 min-w-0">
                           <p className="font-bold text-gray-800 text-sm leading-tight">{spot.name}</p>
                           {spot.address && (
@@ -1060,7 +1060,7 @@ export default function HomePage() {
                   )}
                 </div>
 
-                <div className="flex items-center gap-3 my-3">
+                <div className="flex items-center gap-3 my-2">
                   <div className="h-px flex-1 bg-gray-200" />
                   <span className="text-[10px] text-gray-400">または</span>
                   <div className="h-px flex-1 bg-gray-200" />
