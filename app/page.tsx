@@ -392,7 +392,7 @@ export default function HomePage() {
           [...SPOTS_BY_CATEGORY.food, ...SPOTS_BY_CATEGORY.shop].forEach((spot) => {
             if (!approachFiredRef.current.has(spot.id) && haversine(loc, spot) <= SPOT_APPROACH_M) {
               approachFiredRef.current.add(spot.id);
-              logEvent('APPROACH_200M', { spotId: spot.id, spotName: spot.name });
+              logEvent('APPROACH_200M', userId,{ spotId: spot.id, spotName: spot.name });
             }
           });
         }
