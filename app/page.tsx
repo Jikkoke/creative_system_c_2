@@ -199,7 +199,10 @@ async function logEvent(event: LogEvent, userId:string,payload?: Record<string, 
   try {
     await fetch(GAS_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      mode:'cors',
+      // JION 変更9
+      // headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain'},
       body: JSON.stringify({type,event, userId,ts: Date.now(), ...payload }),
     });
   } catch {
