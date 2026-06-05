@@ -130,7 +130,7 @@ const GOODS_SPOTS: Spot[] = ALL_SPOTS.filter((s) => s.goodsPickup);
 //const GAS_LOG_URL = process.env.NEXT_PUBLIC_GAS_LOG_URL ?? '';
 const GAS_PARKING_URL = process.env.NEXT_PUBLIC_GAS_PARKING_URL ?? '';
 // JION 変更2 GAS_URL追加 (6/5)
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyskLHD5wfLKkkLViJ8HEBN-I0CJ_eHLbJQsVnQgPN5h7dzOCx3LXtcTBL5txuXkA2K/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzPOLKu-JD6Z6eLN9VbHZUZ9BL6B5Dmtv7y31dorcOAmeMbvYJaC6e5fWatBBBGyL9b/exec";
 // ─── ユーティリティ ──────────────────────────────────────────────────────────
 
 function haversine(a: LatLng, b: LatLng): number {
