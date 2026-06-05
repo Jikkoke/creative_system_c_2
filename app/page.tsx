@@ -364,7 +364,9 @@ export default function HomePage() {
   setUserID(uid);
 
   // 🔥 【最重要】Stateの userId ではなく、いま確定したばかりのローカル変数 `uid` を直接渡す
-  logEvent('LAUNCH', userId); 
+ // logEvent('LAUNCH', userId); 
+  // Jion 変更8 userIdからuid (useEffect終わるまではuserIdは反映されない)
+    logEvent('LAUNCH',uid);
 }, []);
 
   // ── 位置情報ウォッチ（status非依存）────────────────────────────────────
