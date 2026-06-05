@@ -126,10 +126,11 @@ const SHELTERS: Shelter[] = loadValidShelters(sheltersData as unknown[]);
 const GOODS_SPOTS: Spot[] = ALL_SPOTS.filter((s) => s.goodsPickup);
 
 // ─── GAS エンドポイント（環境変数） ────────────────────────────────────────
-
-const GAS_LOG_URL = process.env.NEXT_PUBLIC_GAS_LOG_URL ?? '';
+// JION 変更1 コメントアウト (6/5)
+//const GAS_LOG_URL = process.env.NEXT_PUBLIC_GAS_LOG_URL ?? '';
 const GAS_PARKING_URL = process.env.NEXT_PUBLIC_GAS_PARKING_URL ?? '';
-
+// JION 変更2 GAS_URL追加 (6/5)
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyvUaMbwEzCMn13_6kjTiCwU6-wM4TLWjbMPA-Zma0/dev";
 // ─── ユーティリティ ──────────────────────────────────────────────────────────
 
 function haversine(a: LatLng, b: LatLng): number {
@@ -179,19 +180,32 @@ function getOpenStatus(spot: Spot, now: Date = new Date()): OpenStatus {
 
 type LogEvent = 'LAUNCH' | 'GOODS_RECEIVED' | 'SKIP_GOODS' | 'SPOT_SELECT' | 'APPROACH_200M';
 
-async function logEvent(event: LogEvent, payload?: Record<string, unknown>) {
-  if (!GAS_LOG_URL) return;
+// async function logEvent(event: LogEvent, payload?: Record<string, unknown>) {
+//   if (!GAS_LOG_URL) return;
+//   try {
+//     await fetch(GAS_LOG_URL, {
+//       method: 'POST',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify({ event, ts: Date.now(), ...payload }),
+//     });
+//   } catch {
+//     // fire-and-forget
+//   }
+// }
+// JION 変更3 logevent変更 (6/5)
+async function logEvent(event: LogEvent, userId:string,payload?: Record<string, unknown>) {
+  if (!GAS_URL) return;
+  let type = "post_user";
   try {
-    await fetch(GAS_LOG_URL, {
+    await fetch(GAS_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ event, ts: Date.now(), ...payload }),
+      body: JSON.stringify({type,event, userId,ts: Date.now(), ...payload }),
     });
   } catch {
     // fire-and-forget
   }
 }
-
 // ─── マーカースタイル ────────────────────────────────────────────────────────
 
 function getMarkerStyle(spot: Spot): { fillColor: string; label: string } {
@@ -272,7 +286,7 @@ export default function HomePage() {
   const [isTripActive, setIsTripActive] = useState(false);
   const [tripDuration, setTripDuration] = useState<string | null>(null);
   const [tripCurrentIndex, setTripCurrentIndex] = useState(0);
-
+  const [userId,setUserID] = useState("");
   // 「現在時刻」を1分ごとに進める（営業中判定のリアルタイム更新用）
   const [nowTick, setNowTick] = useState<number>(() => Date.now());
   useEffect(() => {
@@ -336,7 +350,22 @@ export default function HomePage() {
   const visibleSpots = useMemo(() => SPOTS_BY_CATEGORY[activeGenre], [activeGenre]);
 
   // ── 起動ログ ────────────────────────────────────────────────────────────
-  useEffect(() => { logEvent('LAUNCH'); }, []);
+  // useEffect(() => { logEvent('LAUNCH'); }, []);
+  // JION 変更4 起動ログ変更 (6/5)
+    useEffect(() => {
+  let uid = localStorage.getItem("nago_tour_uid");
+  
+  if (!uid) {
+    uid = "usr_" + Math.random().toString(36).substring(2, 11);
+    localStorage.setItem("nago_tour_uid", uid);
+  }
+
+  // コンポーネントの状態（State）を更新（あとからの操作ボタン用）
+  setUserID(uid);
+
+  // 🔥 【最重要】Stateの userId ではなく、いま確定したばかりのローカル変数 `uid` を直接渡す
+  logEvent('LAUNCH', userId); 
+}, []);
 
   // ── 位置情報ウォッチ（status非依存）────────────────────────────────────
   useEffect(() => {
@@ -688,7 +717,9 @@ export default function HomePage() {
     setSelectedGoodsSpot(spot);
     setStatus('navigating');
     setIsNearDestination(false);
-    logEvent('SPOT_SELECT', { spotId: spot.id, spotName: spot.name, role: 'goods' });
+    //logEvent('SPOT_SELECT', { spotId: spot.id, spotName: spot.name, role: 'goods' });
+      // JION 変更5 logevent変更 (6/5)
+    logEvent('SPOT_SELECT',userId, { spotId: spot.id, spotName: spot.name, role: 'goods' });
   };
 
   const handleArrivedAtParking = () => {
@@ -698,12 +729,19 @@ export default function HomePage() {
 
   const handleGoToSpotMode = () => {
     setStatus('completed');
-    logEvent('SKIP_GOODS');
+    //logEvent('SKIP_GOODS');
+     // JION 変更6 logevent変更 (6/5)
+    logEvent('SKIP_GOODS',userId);
   };
 
   const handleGoodsReceived = () => {
     setStatus('completed');
-    logEvent('GOODS_RECEIVED', {
+    // logEvent('GOODS_RECEIVED', {
+    //   spotId: selectedGoodsSpot?.id,
+    //   spotName: selectedGoodsSpot?.name,
+    // });
+      // JION 変更7 logevent変更 (6/5)
+    logEvent('GOODS_RECEIVED',userId, {
       spotId: selectedGoodsSpot?.id,
       spotName: selectedGoodsSpot?.name,
     });
@@ -713,7 +751,9 @@ export default function HomePage() {
     setSelectedSpot(spot);
     setShowSpotDetail(true);
     setIsSpotNavigating(false);
-    logEvent('SPOT_SELECT', { spotId: spot.id, spotName: spot.name });
+    //logEvent('SPOT_SELECT', { spotId: spot.id, spotName: spot.name });
+     // JION 変更8 logevent変更 (6/5)
+    logEvent('SPOT_SELECT', userId,{ spotId: spot.id, spotName: spot.name });
   };
 
   const handleStartSpotRoute = () => {
