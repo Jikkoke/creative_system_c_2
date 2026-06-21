@@ -290,6 +290,9 @@ export default function HomePage() {
   const [tripDuration, setTripDuration] = useState<string | null>(null);
   const [tripCurrentIndex, setTripCurrentIndex] = useState(0);
   const [userId,setUserID] = useState("");
+  const [mapCenter, setMapCenter] = useState<LatLng>(KYODA_ORIGIN);
+　const isInitialCenteredRef = useRef(false); //6/21修正1
+  const lastFittedKeyRef = useRef<string>('');//6/21修正2
   // 「現在時刻」を1分ごとに進める（営業中判定のリアルタイム更新用）
   const [nowTick, setNowTick] = useState<number>(() => Date.now());
   useEffect(() => {
@@ -410,7 +413,14 @@ export default function HomePage() {
     );
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
-
+// アプリ起動後、最初の1回だけ現在地に視点を合わせる（以降は自動で動かさない）6/21修正3
+useEffect(() => {
+  if (userLocation && !isInitialCenteredRef.current) {
+    setMapCenter(userLocation);
+    isInitialCenteredRef.current = true;
+  }
+}, [userLocation]);
+  
   // ── 周遊コース中、現在の目的地に到着したら自動で次へ進める ─────────
   useEffect(() => {
     if (!userLocation || status !== 'completed' || !isTripActive) return;
@@ -496,7 +506,11 @@ export default function HomePage() {
             setDirections(result);
             setWalkingDuration(result.routes[0]?.legs[0]?.duration?.text ?? null);
             setRouteError(null);
+            
+            if (lastFittedKeyRef.current !== currentRouteKey) {
             fitMapToRoute(result);
+            lastFittedKeyRef.current = currentRouteKey;
+            } //6/21 修正5 if 分追加
           } else {
             setDirections(null);
             setWalkingDuration(null);
@@ -520,7 +534,10 @@ export default function HomePage() {
             setDirections(result);
             setDrivingDuration(result.routes[0]?.legs[0]?.duration?.text ?? null);
             setRouteError(null);
+            if (lastFittedKeyRef.current !== currentRouteKey) {
             fitMapToRoute(result);
+            lastFittedKeyRef.current = currentRouteKey;
+            } 
           } else {
             setDirections(null);
             setDrivingDuration(null);
@@ -551,7 +568,10 @@ export default function HomePage() {
             setDirections(result);
             setWalkingDuration(result.routes[0]?.legs[0]?.duration?.text ?? null);
             setRouteError(null);
+            if (lastFittedKeyRef.current !== currentRouteKey) {
             fitMapToRoute(result);
+            lastFittedKeyRef.current = currentRouteKey;
+            } 
           } else {
             setDirections(null);
             setWalkingDuration(null);
@@ -592,7 +612,10 @@ export default function HomePage() {
             setWalkingDuration(null);
             setDrivingDuration(null);
             setRouteError(null);
+            if (lastFittedKeyRef.current !== currentRouteKey) {
             fitMapToRoute(result);
+            lastFittedKeyRef.current = currentRouteKey;
+            } 
           } else {
             setDirections(null);
             setTripDuration(null);
@@ -614,7 +637,10 @@ export default function HomePage() {
             setDirections(result);
             setWalkingDuration(result.routes[0]?.legs[0]?.duration?.text ?? null);
             setRouteError(null);
+            if (lastFittedKeyRef.current !== currentRouteKey) {
             fitMapToRoute(result);
+            lastFittedKeyRef.current = currentRouteKey;
+            } 
           } else {
             setDirections(null);
             setWalkingDuration(null);
@@ -803,7 +829,8 @@ export default function HomePage() {
         {isLoaded ? (
           <GoogleMap
             mapContainerStyle={MAP_CONTAINER_STYLE}
-            center={userLocation ?? KYODA_ORIGIN}
+            //center={userLocation ?? KYODA_ORIGIN}
+            center = {mapCenter}// 6/21修正4
             zoom={14}
             options={{ disableDefaultUI: true, clickableIcons: false }}
             onLoad={(map) => { mapRef.current = map; }}
