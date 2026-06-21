@@ -1086,72 +1086,42 @@ useEffect(() => {
       {/* ══════════════════════════════════════════════════════════════
           通常モード UI
       ══════════════════════════════════════════════════════════════ */}
+     {/* ══════════════════════════════════════════════════════════════
+          通常モード UI
+      ══════════════════════════════════════════════════════════════ */}
       {!isDisasterMode && (
-          {/* <div className={`absolute top-4 right-44 z-10 sm:right-auto sm:max-w-md ${status !== 'initial' ? 'left-20' : 'left-4'}`}>
+        <div ref={panelRef} className="absolute bottom-0 left-0 right-0 z-10 bg-white px-4 pt-3 pb-4 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.15)] max-h-[40dvh] flex flex-col overflow-hidden sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl">
+          
+          {/* 📌 【上部固定エリア】 */}
+          <div className="shrink-0 bg-white z-10 pb-1">
+            {/* 駐車場ステータス */}
             <div
-              className={`flex items-center gap-2 px-4 py-3 rounded-2xl shadow-md text-xs font-bold backdrop-blur-sm border ${
+              className={`flex items-center justify-between px-3 py-1.5 mb-2 rounded-xl text-[10px] font-bold border ${
                 parkingStatus === 'full'
-                  ? 'bg-red-50/90 border-red-200 text-red-700'
+                  ? 'bg-red-50 border-red-200 text-red-700'
                   : parkingStatus === 'open'
-                  ? 'bg-emerald-50/90 border-emerald-200 text-emerald-700'
-                  : 'bg-white/80 border-gray-200 text-gray-500'
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                  : 'bg-gray-50 border-gray-200 text-gray-500'
               }`}
             >
-              {parkingStatus === 'loading' && (
-                <><span className="animate-spin inline-block">⏳</span> 駐車場情報を取得中...</>
-              )}
-              {parkingStatus === 'open' && (
-                <>🟢 市営駐車場：空車あり（スムーズに駐車できます）</>
-              )}
-              {parkingStatus === 'full' && (
-                <>🚨 市営駐車場：満車（周辺の臨時駐車場へ向かってください）</>
-              )}
+              <div className="flex items-center gap-1.5 truncate">
+                {parkingStatus === 'loading' && <><span className="animate-spin inline-block">⏳</span> 駐車場確認中...</>}
+                {parkingStatus === 'open' && <>🟢 市営駐車場 空きあり</>}
+                {parkingStatus === 'full' && <>🚨 市営駐車場 満車（臨時Pへ）</>}
+                {parkingStatus === 'error' && <>⚠️ 駐車場情報 取得エラー</>}
+              </div>
               {parkingStatus === 'error' && (
-                <div className="flex items-center gap-2 w-full">
-                  <span>⚠️ 駐車場情報を取得できませんでした</span>
-                  <button
-                    onClick={retryParking}
-                    aria-label="駐車場情報を再取得する"
-                    className="ml-auto shrink-0 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold px-3 py-1 rounded-full transition-colors"
-                  >
-                    再試行
-                  </button>
-                </div>
+                <button
+                  onClick={retryParking}
+                  className="shrink-0 bg-gray-200 hover:bg-gray-300 px-2 py-0.5 rounded text-[9px] transition-colors"
+                >
+                  再試行
+                </button>
               )}
             </div>
-          </div>  */}
-
-          <div ref={panelRef} className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-5 pb-8 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.15)] max-h-[40dvh] overflow-y-auto sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl sm:max-h-[50dvh]">
-           <div className="shrink-0 bg-white z-10 pb-1">
-              {/* 駐車場ステータス */}
-              <div
-                className={`flex items-center justify-between px-3 py-1.5 mb-2 rounded-xl text-[10px] font-bold border ${
-                  parkingStatus === 'full'
-                    ? 'bg-red-50 border-red-200 text-red-700'
-                    : parkingStatus === 'open'
-                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                    : 'bg-gray-50 border-gray-200 text-gray-500'
-                }`}
-              >
-                <div className="flex items-center gap-1.5 truncate">
-                  {parkingStatus === 'loading' && <><span className="animate-spin inline-block">⏳</span> 駐車場確認中...</>}
-                  {parkingStatus === 'open' && <>🟢 市営駐車場 空きあり</>}
-                  {parkingStatus === 'full' && <>🚨 市営駐車場 満車（臨時Pへ）</>}
-                  {parkingStatus === 'error' && <>⚠️ 駐車場情報 取得エラー</>}
-                </div>
-                {parkingStatus === 'error' && (
-                  <button
-                    onClick={retryParking}
-                    className="shrink-0 bg-gray-200 hover:bg-gray-300 px-2 py-0.5 rounded text-[9px] transition-colors"
-                  >
-                    再試行
-                  </button>
-                )}
-              </div>
             
             {/* ステップインジケーター */}
             {(() => {
-              // navigating と walking-to-goods は同じステップ（受取フェーズ）
               const step =
                 status === 'initial' ? 1 :
                 status === 'navigating' || status === 'walking-to-goods' ? 2 :
@@ -1180,6 +1150,10 @@ useEffect(() => {
                 </div>
               );
             })()}
+          </div>
+
+          {/* 📜 【可変スクロールエリア】ここから下のコンテンツだけがスクロールします */}
+          <div className="overflow-y-auto flex-1 pr-0.5 pb-2 scrollbar-hide">
 
             {/* A. 初期状態 */}
             {status === 'initial' && (
@@ -1350,41 +1324,41 @@ useEffect(() => {
               </div>
             )}
 
-              　{status === 'exchanging' && selectedGoodsSpot && (
-                <div key="exchanging-goods" className="space-y-5 animate-panel-enter text-center">
-                  <div className="bg-gradient-to-b from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-5 shadow-inner">
-                    <span className="text-5xl animate-bounce inline-block mb-2">🎁</span>
-                    <h3 className="font-extrabold text-gray-800 text-xl">
-                      ChuraFresh 引き換え
-                    </h3>
-                    <p className="text-xs text-blue-600 font-bold mt-1">
-                      引換場所: {selectedGoodsSpot.emoji} {selectedGoodsSpot.name}
-                    </p>
-                  </div>
-              
-                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-left">
-                    <p className="text-xs font-extrabold text-amber-800 flex items-center gap-1">
-                      ⚠️ 店舗スタッフの方へ
-                    </p>
-                    <p className="text-xs text-gray-600 mt-1 leading-relaxed">
-                      この画面を確認したら、Chura Freshをお客様にお渡しください。お渡しが完了しましたら、下の確認ボタンを押してください。
-                    </p>
-                  </div>
-              
-                  {/* 実運用での誤操作・不正防止のためのスタッフ確認ボタン */}
-                  <button
-                    onClick={handleExchangeComplete}
-                    aria-label="引き換えを完了して観光スポット一覧へ進む"
-                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold shadow-lg hover:from-emerald-600 hover:to-teal-700 active:scale-95 transition-all flex items-center justify-center gap-2"
-                  >
-                    ✨ スタッフ確認・引き換え完了
-                  </button>
-                  
-                  <p className="text-[10px] text-gray-400">
-                    ※ボタンを押すと、名護市内のおすすめ観光スポット案内へ進みます。
+            {/* B-3. 引き換え画面 */}
+            {status === 'exchanging' && selectedGoodsSpot && (
+              <div key="exchanging-goods" className="space-y-5 animate-panel-enter text-center">
+                <div className="bg-gradient-to-b from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-5 shadow-inner">
+                  <span className="text-5xl animate-bounce inline-block mb-2">🎁</span>
+                  <h3 className="font-extrabold text-gray-800 text-xl">
+                    ChuraFresh 引き換え
+                  </h3>
+                  <p className="text-xs text-blue-600 font-bold mt-1">
+                    引換場所: {selectedGoodsSpot.emoji} {selectedGoodsSpot.name}
                   </p>
                 </div>
-              )}
+            
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-left">
+                  <p className="text-xs font-extrabold text-amber-800 flex items-center gap-1">
+                    ⚠️ 店舗スタッフの方へ
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                    この画面を確認したら、Chura Freshをお客様にお渡しください。お渡しが完了しましたら、下の確認ボタンを押してください。
+                  </p>
+                </div>
+            
+                <button
+                  onClick={handleExchangeComplete}
+                  aria-label="引き換えを完了して観光スポット一覧へ進む"
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold shadow-lg hover:from-emerald-600 hover:to-teal-700 active:scale-95 transition-all flex items-center justify-center gap-2"
+                >
+                  ✨ スタッフ確認・引き換え完了
+                </button>
+                
+                <p className="text-[10px] text-gray-400">
+                  ※ボタンを押すと、名護市内のおすすめ観光スポット案内へ進みます。
+                </p>
+              </div>
+            )}
             
             {/* C. 完了：スポット一覧 */}
             {status === 'completed' && !showSpotDetail && !isSpotNavigating && !isTripActive && (
@@ -1393,7 +1367,6 @@ useEffect(() => {
                   次はどこへ寄りますか？
                 </h2>
 
-                {/* 周遊コース選択中サマリー */}
                 {tripSpots.length > 0 && (
                   <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-2xl space-y-2">
                     <div className="flex items-center justify-between">
@@ -1636,7 +1609,7 @@ useEffect(() => {
 
                 <div className="w-full h-40 bg-gradient-to-br from-blue-100 to-indigo-200 rounded-2xl mb-4 overflow-hidden flex items-center justify-center">
                   {selectedSpot.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- external URLs; next/image needs remotePatterns config
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={selectedSpot.imageUrl}
                       alt={selectedSpot.name}
@@ -1755,10 +1728,10 @@ useEffect(() => {
                 </button>
               </div>
             )}
-     　 </div> {/* ← 1. 📜 可変スクロールエリアを閉じる */}
-        </div> {/* ← 2. ── 通常モード下部パネル全体を閉じる */}
-      )} {/* ← 3. {!isDisasterMode && ( の条件を閉じる */}
-      
+
+          </div> {/* ← 📜 可変スクロールエリアの終了 */}
+        </div> {/* ← 通常モード下部パネル全体の終了 */}
+      )} {/* ← {!isDisasterMode && ( の終了 */}
 {showChuraFreshInfo && (
         <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
           {/* 背景の半透明オーバーレイ（タップで閉じる） */}
