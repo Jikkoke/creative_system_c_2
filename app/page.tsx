@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import churaFreshImg from '@/data/ChuraFresh.png';
-import nagodetourImg from '@/data/Nagodetour.png';
+import nagodetourImg from '@/data/nagodetour.png';
 import {
   GoogleMap,
   useJsApiLoader,
