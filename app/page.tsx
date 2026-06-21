@@ -1757,7 +1757,6 @@ useEffect(() => {
               </div>
             )}
           </div>
-        </>
       )}
       
 {showChuraFreshInfo && (
