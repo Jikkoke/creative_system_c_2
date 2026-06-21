@@ -1087,7 +1087,6 @@ useEffect(() => {
           通常モード UI
       ══════════════════════════════════════════════════════════════ */}
       {!isDisasterMode && (
-        <>
           {/* <div className={`absolute top-4 right-44 z-10 sm:right-auto sm:max-w-md ${status !== 'initial' ? 'left-20' : 'left-4'}`}>
             <div
               className={`flex items-center gap-2 px-4 py-3 rounded-2xl shadow-md text-xs font-bold backdrop-blur-sm border ${
@@ -1120,7 +1119,7 @@ useEffect(() => {
                 </div>
               )}
             </div>
-          </div> */}
+          </div>  */}
 
           <div ref={panelRef} className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-5 pb-8 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.15)] max-h-[40dvh] overflow-y-auto sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl sm:max-h-[50dvh]">
            <div className="shrink-0 bg-white z-10 pb-1">
