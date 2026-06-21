@@ -58,7 +58,7 @@ type Shelter = {
   lng: number;
 };
 
-type Status = 'initial' | 'navigating' | 'walking-to-goods' | 'completed';
+type Status = 'initial' | 'navigating' | 'walking-to-goods' | 'exchanging' | 'completed';
 type Genre = 'food' | 'shop';
 type ParkingStatus = 'loading' | 'open' | 'full' | 'error';
 type LatLng = { lat: number; lng: number };
@@ -768,7 +768,7 @@ useEffect(() => {
   };
 
   const handleGoodsReceived = () => {
-    setStatus('completed');
+    setStatus('exchanging');
     // logEvent('GOODS_RECEIVED', {
     //   spotId: selectedGoodsSpot?.id,
     //   spotName: selectedGoodsSpot?.name,
@@ -779,7 +779,12 @@ useEffect(() => {
       spotName: selectedGoodsSpot?.name,
     });
   };
-
+  const handleExchangeComplete = () => {
+  setStatus('completed');
+  if (typeof lastFittedKeyRef !== 'undefined') {
+    lastFittedKeyRef.current = '';
+  }
+  };
   const handleSelectSpot = (spot: Spot) => {
     setSelectedSpot(spot);
     setShowSpotDetail(true);
@@ -1287,6 +1292,42 @@ useEffect(() => {
               </div>
             )}
 
+              　{status === 'exchanging' && selectedGoodsSpot && (
+                <div key="exchanging-goods" className="space-y-5 animate-panel-enter text-center">
+                  <div className="bg-gradient-to-b from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-5 shadow-inner">
+                    <span className="text-5xl animate-bounce inline-block mb-2">🎁</span>
+                    <h3 className="font-extrabold text-gray-800 text-xl">
+                      ChuraFresh 特典引き換え
+                    </h3>
+                    <p className="text-xs text-blue-600 font-bold mt-1">
+                      引換場所: {selectedGoodsSpot.emoji} {selectedGoodsSpot.name}
+                    </p>
+                  </div>
+              
+                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-left">
+                    <p className="text-xs font-extrabold text-amber-800 flex items-center gap-1">
+                      ⚠️ 店舗スタッフの方へ
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                      この画面を開いた状態で、対象の「香りのアトマイザー/グッズ」をお客様にお渡しください。お渡しが完了しましたら、下の確認ボタンを押してください。
+                    </p>
+                  </div>
+              
+                  {/* 実運用での誤操作・不正防止のためのスタッフ確認ボタン */}
+                  <button
+                    onClick={handleExchangeComplete}
+                    aria-label="引き換えを完了して観光スポット一覧へ進む"
+                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold shadow-lg hover:from-emerald-600 hover:to-teal-700 active:scale-95 transition-all flex items-center justify-center gap-2"
+                  >
+                    ✨ スタッフ確認・引き換え完了
+                  </button>
+                  
+                  <p className="text-[10px] text-gray-400">
+                    ※ボタンを押すと、名護市内のおすすめ観光スポット案内へ進みます。
+                  </p>
+                </div>
+              )}
+            
             {/* C. 完了：スポット一覧 */}
             {status === 'completed' && !showSpotDetail && !isSpotNavigating && !isTripActive && (
               <div key="completed-list" className="animate-panel-enter">
