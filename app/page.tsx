@@ -988,21 +988,11 @@ useEffect(() => {
 
      <header className="absolute top-0 left-0 right-0 z-20 p-4 flex items-center justify-between pointer-events-none header-area">
         
-        {/* 1. 左側ボタングループ */}
-        <div className="flex items-center gap-2 pointer-events-auto">
-          {/* ── Chura Fresh とは？ ボタン (位置変更: 左側) ───────────────────── */}
-          {!isDisasterMode && (
-            <button
-              onClick={() => setShowChuraFreshInfo(true)}
-              aria-label="Chura Freshについての説明を見る"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/90 backdrop-blur border border-blue-200 shadow-md text-blue-600 font-bold text-sm hover:bg-blue-50 active:scale-95 transition-all whitespace-nowrap"
-            >
-              🎁 Chura Freshとは？
-            </button>
-          )}
-        </div>
+        {/* 1. 左側ボタングループ (空にしてスペースを確保) */}
+        <div className="flex items-center gap-2 pointer-events-auto"></div>
 
-       <div className="absolute top-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 logo-container pointer-events-auto">
+        {/* 2. 中央：ロゴ画像 ＆ Chura Freshボタンを縦に配置 (重なりを100%回避) */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 logo-container pointer-events-auto">
           <button
             onClick={handleReset}
             disabled={status === 'initial' || isDisasterMode}
@@ -1016,9 +1006,20 @@ useEffect(() => {
             <img
               src={nagodetourImg.src}
               alt="NAGO de TOUR ロゴ"
-              className="w-24 h-24 rounded-full border-2 border-white shadow-lg object-cover"
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-white shadow-lg object-cover transition-all"
             />
           </button>
+
+          {/* ── Chura Fresh とは？ ボタン (中央ロゴ直下に配置変更) ───────────────────── */}
+          {!isDisasterMode && (
+            <button
+              onClick={() => setShowChuraFreshInfo(true)}
+              aria-label="Chura Freshについての説明を見る"
+              className="flex items-center gap-1 px-3 py-1 rounded-full bg-white/95 backdrop-blur border border-blue-200 shadow-sm text-blue-600 font-bold text-xs hover:bg-blue-50 active:scale-95 transition-all whitespace-nowrap"
+            >
+              🎁 Chura Freshとは？
+            </button>
+          )}
         </div>
 
 
@@ -1122,30 +1123,32 @@ useEffect(() => {
           </div> */}
 
           <div ref={panelRef} className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-5 pb-8 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.15)] max-h-[40dvh] overflow-y-auto sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl sm:max-h-[50dvh]">
-           <div
-              className={`flex items-center justify-between px-3 py-1.5 mb-2.5 rounded-xl text-[10px] font-bold border ${
-                parkingStatus === 'full'
-                  ? 'bg-red-50 border-red-200 text-red-700'
-                  : parkingStatus === 'open'
-                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                  : 'bg-gray-50 border-gray-200 text-gray-500'
-              }`}
-            >
-              <div className="flex items-center gap-1.5 truncate">
-                {parkingStatus === 'loading' && <><span className="animate-spin inline-block">⏳</span> 駐車場確認中...</>}
-                {parkingStatus === 'open' && <>🟢 市営駐車場 空きあり</>}
-                {parkingStatus === 'full' && <>🚨 市営駐車場 満車（臨時Pへ）</>}
-                {parkingStatus === 'error' && <>⚠️ 駐車場情報 取得エラー</>}
+           <div className="shrink-0 bg-white z-10 pb-1">
+              {/* 駐車場ステータス */}
+              <div
+                className={`flex items-center justify-between px-3 py-1.5 mb-2 rounded-xl text-[10px] font-bold border ${
+                  parkingStatus === 'full'
+                    ? 'bg-red-50 border-red-200 text-red-700'
+                    : parkingStatus === 'open'
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                    : 'bg-gray-50 border-gray-200 text-gray-500'
+                }`}
+              >
+                <div className="flex items-center gap-1.5 truncate">
+                  {parkingStatus === 'loading' && <><span className="animate-spin inline-block">⏳</span> 駐車場確認中...</>}
+                  {parkingStatus === 'open' && <>🟢 市営駐車場 空きあり</>}
+                  {parkingStatus === 'full' && <>🚨 市営駐車場 満車（臨時Pへ）</>}
+                  {parkingStatus === 'error' && <>⚠️ 駐車場情報 取得エラー</>}
+                </div>
+                {parkingStatus === 'error' && (
+                  <button
+                    onClick={retryParking}
+                    className="shrink-0 bg-gray-200 hover:bg-gray-300 px-2 py-0.5 rounded text-[9px] transition-colors"
+                  >
+                    再試行
+                  </button>
+                )}
               </div>
-              {parkingStatus === 'error' && (
-                <button
-                  onClick={retryParking}
-                  className="shrink-0 bg-gray-200 hover:bg-gray-300 px-2 py-0.5 rounded text-[9px] transition-colors"
-                >
-                  再試行
-                </button>
-              )}
-            </div>
             
             {/* ステップインジケーター */}
             {(() => {
