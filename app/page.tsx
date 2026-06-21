@@ -309,8 +309,22 @@ export default function HomePage() {
   const [drivingDuration, setDrivingDuration] = useState<string | null>(null);
   const [walkingDuration, setWalkingDuration] = useState<string | null>(null);
   const [routeError, setRouteError] = useState<string | null>(null);
-  const [isNearDestination, setIsNearDestination] = useState(false);
-
+  //const [isNearDestination, setIsNearDestination] = useState(false);
+  const isNearDestination = useMemo(() => {
+  if (!userLocation) return false;
+  
+  if (status === 'navigating') {
+    return haversine(userLocation, NAGO_PARKING) <= ARRIVAL_RADIUS_M;
+  }
+  
+  if (status === 'walking-to-goods') {
+    if (!selectedGoodsSpot) return false;
+    return haversine(userLocation, selectedGoodsSpot) <= ARRIVAL_RADIUS_M;
+  }
+  
+  return false;
+}, [userLocation, status, selectedGoodsSpot]); // この3つのどれかが変われば即座に再計算される
+  
   // 駐車場状態
   const [parkingStatus, setParkingStatus] = useState<ParkingStatus>('loading');
 
@@ -389,13 +403,13 @@ export default function HomePage() {
         );
 
         const cur = statusRef.current;
-        if (cur === 'navigating') {
-          setIsNearDestination(haversine(loc, NAGO_PARKING) <= ARRIVAL_RADIUS_M);
-        }
-        if (cur === 'walking-to-goods') {
-          const goal = selectedGoodsSpotRef.current;
-          setIsNearDestination(!!goal && haversine(loc, goal) <= ARRIVAL_RADIUS_M);
-        }
+        // if (cur === 'navigating') {
+        //   setIsNearDestination(haversine(loc, NAGO_PARKING) <= ARRIVAL_RADIUS_M);
+        // }
+        // if (cur === 'walking-to-goods') {
+        //   const goal = selectedGoodsSpotRef.current;
+        //   setIsNearDestination(!!goal && haversine(loc, goal) <= ARRIVAL_RADIUS_M);
+        // }
         if (cur === 'completed') {
           [...SPOTS_BY_CATEGORY.food, ...SPOTS_BY_CATEGORY.shop].forEach((spot) => {
             if (!approachFiredRef.current.has(spot.id) && haversine(loc, spot) <= SPOT_APPROACH_M) {
@@ -698,7 +712,7 @@ useEffect(() => {
     setDrivingDuration(null);
     setWalkingDuration(null);
     setRouteError(null);
-    setIsNearDestination(false);
+    //setIsNearDestination(false);
     setPopupSpot(null);
     approachFiredRef.current.clear();
   };
@@ -749,7 +763,7 @@ useEffect(() => {
   const handleSelectGoodsSpot = (spot: Spot) => {
     setSelectedGoodsSpot(spot);
     setStatus('navigating');
-    setIsNearDestination(false);
+    //setIsNearDestination(false);
     //logEvent('SPOT_SELECT', { spotId: spot.id, spotName: spot.name, role: 'goods' });
       // JION 変更5 logevent変更 (6/5)
     logEvent('SPOT_SELECT',userId, { spotId: spot.id, spotName: spot.name, role: 'goods' });
@@ -757,7 +771,7 @@ useEffect(() => {
 
   const handleArrivedAtParking = () => {
     setStatus('walking-to-goods');
-    setIsNearDestination(false);
+   // setIsNearDestination(false);
   };
 
   const handleGoToSpotMode = () => {
