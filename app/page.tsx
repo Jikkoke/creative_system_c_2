@@ -1072,7 +1072,7 @@ useEffect(() => {
                 </p>
               )}
             </div>
-            <a
+            <
               href="tel:119"
               aria-label="119番に電話する"
               className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-red-600 text-white text-base font-bold shadow-lg hover:bg-red-700 active:scale-95 transition-all"
