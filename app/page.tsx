@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import churaFreshImg from '@/data/ChuraFresh.png';
 import {
   GoogleMap,
   useJsApiLoader,
@@ -1740,7 +1741,7 @@ useEffect(() => {
             <div className="w-full h-48 bg-blue-50 relative shrink-0 flex items-center justify-center">
               {/* ▼ 実際の画像パスに変更してください ▼ */}
               <img 
-                src='@/data/ChuraFresh.png'
+                src={churaFreshImg.src}
                 alt="Chura Fresh" 
                 className="w-full h-full object-cover"
                 onError={(e) => {
