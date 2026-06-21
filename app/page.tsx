@@ -481,7 +481,9 @@ useEffect(() => {
     const svc = dirSvcRef.current;
 
     let cancelled = false;
-
+    const currentRouteKey = isDisasterMode 
+      ? 'disaster' 
+      : `${status}-${selectedGoodsSpot?.id ?? ''}-${selectedSpot?.id ?? ''}-${isTripActive}-${tripSpots.length}`;
     // 防災モード：徒歩のみ（GPS必須）
     if (isDisasterMode) {
       if (!routeOrigin) {
