@@ -1034,7 +1034,8 @@ useEffect(() => {
             }`}
           >
            // {isDisasterMode ? '🚨 防災モードON' : '🛡️ 防災モード'} 
-          </button> */
+          </button> 
+          </div> */}
 
       </header>
    
