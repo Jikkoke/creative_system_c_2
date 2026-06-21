@@ -1006,7 +1006,7 @@ useEffect(() => {
         {/* 既存の位置指定クラスを削除し、headerコンテナの中央に配置されるように調整 */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 logo-container pointer-events-auto">
           <img
-            src=src={nagodetourImg.src} // image_0.png を public/logo.png として配置することを想定
+            src={nagodetourImg.src} // image_0.png を public/logo.png として配置することを想定
             alt="NAGO de TOUR ロゴ"
             className="w-24 h-24 rounded-full border-2 border-white shadow-lg object-cover" // 円形にして写真のように
           />
