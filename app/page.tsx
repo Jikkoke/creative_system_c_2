@@ -1756,8 +1756,9 @@ useEffect(() => {
                 </button>
               </div>
             )}
-          </div>
-      )}
+     　 </div> {/* ← 1. 📜 可変スクロールエリアを閉じる */}
+        </div> {/* ← 2. ── 通常モード下部パネル全体を閉じる */}
+      )} {/* ← 3. {!isDisasterMode && ( の条件を閉じる */}
       
 {showChuraFreshInfo && (
         <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
