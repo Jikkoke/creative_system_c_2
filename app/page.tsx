@@ -1021,9 +1021,9 @@ useEffect(() => {
           </button>
         </div>
 
-        /* {/* 3. 右側ボタングループ */}
-        {/* <div className="flex items-center gap-2 pointer-events-auto">
-          {/* ── 防災モード切替ボタン (位置変更: 右側) ───────────────────────── */}
+
+         {/* <div className="flex items-center gap-2 pointer-events-auto"> */}
+          {/* ── 防災モード切替ボタン (位置変更: 右側) ───────────────────────── 
           {/* <button
             onClick={() => setIsDisasterMode((v) => !v)}
             aria-label={isDisasterMode ? '防災モードをオフにする' : '防災モードをオンにする'}
@@ -1033,8 +1033,8 @@ useEffect(() => {
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
             }`}
           >
-            {isDisasterMode ? '🚨 防災モードON' : '🛡️ 防災モード'} */} */}
-          </button> */
+           // {isDisasterMode ? '🚨 防災モードON' : '🛡️ 防災モード'} 
+          </button> 
 
       </header>
       {/* ══════════════════════════════════════════════════════════════
