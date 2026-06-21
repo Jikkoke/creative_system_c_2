@@ -1002,20 +1002,29 @@ useEffect(() => {
           )}
         </div>
 
-        {/* 2. ロゴ画像 (上部中央) */}
-        {/* 既存の位置指定クラスを削除し、headerコンテナの中央に配置されるように調整 */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 logo-container pointer-events-auto">
-          <img
-            src={nagodetourImg.src} // image_0.png を public/logo.png として配置することを想定
-            alt="NAGO de TOUR ロゴ"
-            className="w-24 h-24 rounded-full border-2 border-white shadow-lg object-cover" // 円形にして写真のように
-          />
+       <div className="absolute top-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 logo-container pointer-events-auto">
+          <button
+            onClick={handleReset}
+            disabled={status === 'initial' || isDisasterMode}
+            aria-label="ホームへ戻る"
+            className={`rounded-full transition-all ${
+              status !== 'initial' && !isDisasterMode 
+                ? 'active:scale-95 hover:opacity-90 cursor-pointer' 
+                : 'cursor-default'
+            }`}
+          >
+            <img
+              src={nagodetourImg.src}
+              alt="NAGO de TOUR ロゴ"
+              className="w-24 h-24 rounded-full border-2 border-white shadow-lg object-cover"
+            />
+          </button>
         </div>
 
-        {/* 3. 右側ボタングループ */}
-        <div className="flex items-center gap-2 pointer-events-auto">
+        /* {/* 3. 右側ボタングループ */}
+        {/* <div className="flex items-center gap-2 pointer-events-auto">
           {/* ── 防災モード切替ボタン (位置変更: 右側) ───────────────────────── */}
-          <button
+          {/* <button
             onClick={() => setIsDisasterMode((v) => !v)}
             aria-label={isDisasterMode ? '防災モードをオフにする' : '防災モードをオンにする'}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-bold shadow-lg text-sm transition-all ${
@@ -1024,20 +1033,9 @@ useEffect(() => {
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
             }`}
           >
-            {isDisasterMode ? '🚨 防災モードON' : '🛡️ 防災モード'}
-          </button>
+            {isDisasterMode ? '🚨 防災モードON' : '🛡️ 防災モード'} */} */}
+          </button> */
 
-          {/* ── ホームボタン (位置変更: 右側) ─────────────────────────────── */}
-          {status !== 'initial' && !isDisasterMode && (
-            <button
-              onClick={handleReset}
-              aria-label="ホームへ戻る"
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-white/90 backdrop-blur border border-gray-200 shadow-md text-gray-700 text-lg hover:bg-gray-50 active:scale-95 transition-all"
-            >
-              🏠
-            </button>
-          )}
-        </div>
       </header>
       {/* ══════════════════════════════════════════════════════════════
           防災モード UI
