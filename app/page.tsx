@@ -1765,15 +1765,15 @@ useEffect(() => {
                 Chura Fresh
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed mb-5">
-                名護の自然や文化を香りで表現したオリジナルグッズです。
-                スポットを巡ってポイントを集めるのではなく、訪れた場所で「香りを重ねて完成させる」新しい体験を提供します。
+                オリオンビールの麦芽粕を再利用して作られた、オリジナルグッズです。
+                好きな香りを吹きかけて、あなただけの名護の思い出を提供します。
               </p>
 
               <div className="bg-blue-50 rounded-2xl p-4 border border-blue-100 mb-6">
                 <h4 className="text-sm font-bold text-blue-800 mb-2">✨ 楽しみ方</h4>
                 <ol className="text-xs text-blue-700 space-y-2 pl-4 list-decimal marker:font-bold">
                   <li>名護市営駐車場へ車を停める</li>
-                  <li>対象店舗でベースとなるアトマイザー（香りグッズ）をゲット！</li>
+                  <li>引き換え店舗へ訪れ、Chura Freshをゲット！</li>
                   <li>おすすめスポットを巡って名護を満喫</li>
                 </ol>
               </div>
