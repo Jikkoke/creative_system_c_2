@@ -279,6 +279,7 @@ export default function HomePage() {
   // UI 状態
   const [status, setStatus] = useState<Status>('initial');
   const [isDisasterMode, setIsDisasterMode] = useState(false);
+  const [showChuraFreshInfo, setShowChuraFreshInfo] = useState(false);
   const [activeGenre, setActiveGenre] = useState<Genre>('food');
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
   const [showSpotDetail, setShowSpotDetail] = useState(false);
@@ -1017,7 +1018,16 @@ useEffect(() => {
       >
         {isDisasterMode ? '🚨 防災モードON' : '🛡️ 防災モード'}
       </button>
-
+      {/* ── Chura Fresh とは？ ボタン (ここを追加) ───────────────────── */}
+      {!isDisasterMode && (
+        <button
+          onClick={() => setShowChuraFreshInfo(true)}
+          aria-label="Chura Freshについての説明を見る"
+          className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/90 backdrop-blur border border-blue-200 shadow-md text-blue-600 font-bold text-sm hover:bg-blue-50 active:scale-95 transition-all whitespace-nowrap"
+        >
+          🎁 Chura Freshとは？
+        </button>
+      )}
       {/* ══════════════════════════════════════════════════════════════
           防災モード UI
       ══════════════════════════════════════════════════════════════ */}
@@ -1714,7 +1724,70 @@ useEffect(() => {
           </div>
         </>
       )}
+      
+{showChuraFreshInfo && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
+          {/* 背景の半透明オーバーレイ（タップで閉じる） */}
+          <div 
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" 
+            onClick={() => setShowChuraFreshInfo(false)} 
+          />
+          
+          {/* モーダル本体 */}
+          <div className="relative w-full max-w-sm bg-white rounded-[28px] overflow-hidden shadow-2xl animate-panel-enter flex flex-col max-h-[85vh]">
+            
+            {/* 写真エリア */}
+            <div className="w-full h-48 bg-blue-50 relative shrink-0 flex items-center justify-center">
+              {/* ▼ 実際の画像パスに変更してください ▼ */}
+              <img 
+                src="/images/chura-fresh-sample.jpg" 
+                alt="Chura Fresh" 
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  // 画像がない場合のフォールバック表示
+                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                  e.currentTarget.parentElement!.innerHTML = '<span class="text-6xl">🎁</span><button id="close-btn" class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-black/30 text-white z-10">✕</button>';
+                  document.getElementById('close-btn')?.addEventListener('click', () => setShowChuraFreshInfo(false));
+                }}
+              />
+              <button
+                onClick={() => setShowChuraFreshInfo(false)}
+                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors z-10"
+              >
+                ✕
+              </button>
+            </div>
 
+            {/* 説明コンテンツエリア */}
+            <div className="p-6 overflow-y-auto">
+              <h3 className="text-xl font-extrabold text-gray-800 mb-2 flex items-center gap-2">
+                Chura Fresh
+              </h3>
+              <p className="text-sm text-gray-600 leading-relaxed mb-5">
+                名護の自然や文化を香りで表現したオリジナルグッズです。
+                スポットを巡ってポイントを集めるのではなく、訪れた場所で「香りを重ねて完成させる」新しい体験を提供します。
+              </p>
+
+              <div className="bg-blue-50 rounded-2xl p-4 border border-blue-100 mb-6">
+                <h4 className="text-sm font-bold text-blue-800 mb-2">✨ 楽しみ方</h4>
+                <ol className="text-xs text-blue-700 space-y-2 pl-4 list-decimal marker:font-bold">
+                  <li>名護市営駐車場へ車を停める</li>
+                  <li>対象店舗でベースとなるアトマイザー（香りグッズ）をゲット！</li>
+                  <li>おすすめスポットを巡って名護を満喫</li>
+                </ol>
+              </div>
+
+              <button
+                onClick={() => setShowChuraFreshInfo(false)}
+                className="w-full py-4 rounded-2xl bg-blue-600 text-white font-bold shadow-lg hover:bg-blue-700 active:scale-95 transition-all"
+              >
+                閉じる
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* ── 位置情報エラーオーバーレイ ────────────────────────────────── */}
       {geoError && (
         <div className="absolute inset-0 z-50 flex items-end justify-center">
