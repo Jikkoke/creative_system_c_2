@@ -19,8 +19,8 @@ const NAGO_PARKING = { lat: 26.589103, lng: 127.9840, }; // 名護市営駐車�
 
 // ─── しきい値・間隔 ──────────────────────────────────────────────────────────
 
-const ARRIVAL_RADIUS_M = 100;          // 駐車場到着判定
-const SPOT_APPROACH_M = 200;           // スポット接近イベント
+const ARRIVAL_RADIUS_M = 500;          // 駐車場到着判定
+const SPOT_APPROACH_M = 500;           // スポット接近イベント
 const ROUTE_RECALC_THRESHOLD_M = 100;  // ルート再計算する移動距離
 const PARKING_POLL_INTERVAL_MS = 30_000;
 const WALK_SPEED_M_PER_MIN = 80;       // 徒歩速度（距離 → 分の概算用）
