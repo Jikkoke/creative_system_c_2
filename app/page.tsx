@@ -128,11 +128,9 @@ const SHELTERS: Shelter[] = loadValidShelters(sheltersData as unknown[]);
 const GOODS_SPOTS: Spot[] = ALL_SPOTS.filter((s) => s.goodsPickup);
 
 // ─── GAS エンドポイント（環境変数） ────────────────────────────────────────
-// JION 変更1 コメントアウト (6/5)
-//const GAS_LOG_URL = process.env.NEXT_PUBLIC_GAS_LOG_URL ?? '';
 const GAS_PARKING_URL = process.env.NEXT_PUBLIC_GAS_PARKING_URL ?? '';
-// JION 変更2 GAS_URL追加 (6/5)
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzPOLKu-JD6Z6eLN9VbHZUZ9BL6B5Dmtv7y31dorcOAmeMbvYJaC6e5fWatBBBGyL9b/exec";
+
 // ─── ユーティリティ ──────────────────────────────────────────────────────────
 
 function haversine(a: LatLng, b: LatLng): number {
@@ -182,19 +180,6 @@ function getOpenStatus(spot: Spot, now: Date = new Date()): OpenStatus {
 
 type LogEvent = 'LAUNCH' | 'GOODS_RECEIVED' | 'SKIP_GOODS' | 'SPOT_SELECT' | 'APPROACH_200M';
 
-// async function logEvent(event: LogEvent, payload?: Record<string, unknown>) {
-//   if (!GAS_LOG_URL) return;
-//   try {
-//     await fetch(GAS_LOG_URL, {
-//       method: 'POST',
-//       headers: { 'Content-Type': 'application/json' },
-//       body: JSON.stringify({ event, ts: Date.now(), ...payload }),
-//     });
-//   } catch {
-//     // fire-and-forget
-//   }
-// }
-// JION 変更3 logevent変更 (6/5)
 async function logEvent(event: LogEvent, userId:string,payload?: Record<string, unknown>) {
   if (!GAS_URL) return;
   let type = "post_user";
@@ -202,8 +187,6 @@ async function logEvent(event: LogEvent, userId:string,payload?: Record<string, 
     await fetch(GAS_URL, {
       method: 'POST',
       mode:'cors',
-      // JION 変更9
-      // headers: { 'Content-Type': 'application/json' },
       headers: { 'Content-Type': 'text/plain'},
       body: JSON.stringify({type,event, userId,ts: Date.now(), ...payload }),
     });
@@ -211,6 +194,7 @@ async function logEvent(event: LogEvent, userId:string,payload?: Record<string, 
     // fire-and-forget
   }
 }
+
 // ─── マーカースタイル ────────────────────────────────────────────────────────
 
 function getMarkerStyle(spot: Spot): { fillColor: string; label: string } {
@@ -294,47 +278,37 @@ export default function HomePage() {
   const [tripCurrentIndex, setTripCurrentIndex] = useState(0);
   const [userId,setUserID] = useState("");
   const [mapCenter, setMapCenter] = useState<LatLng>(KYODA_ORIGIN);
-　const isInitialCenteredRef = useRef(false); //6/21修正1
-  const lastFittedKeyRef = useRef<string>('');//6/21修正2
-  // 「現在時刻」を1分ごとに進める（営業中判定のリアルタイム更新用）
+  const isInitialCenteredRef = useRef(false);
+  const lastFittedKeyRef = useRef<string>('');
+
   const [nowTick, setNowTick] = useState<number>(() => Date.now());
   useEffect(() => {
     const id = setInterval(() => setNowTick(Date.now()), 60_000);
     return () => clearInterval(id);
   }, []);
 
-  // 位置・ルート状態
-  // userLocation: マーカー表示用（常時更新）
-  // routeOrigin: ルート計算用（しきい値以上動いた時だけ更新）
   const [userLocation, setUserLocation] = useState<LatLng | null>(null);
   const [routeOrigin, setRouteOrigin] = useState<LatLng | null>(null);
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const [drivingDuration, setDrivingDuration] = useState<string | null>(null);
   const [walkingDuration, setWalkingDuration] = useState<string | null>(null);
   const [routeError, setRouteError] = useState<string | null>(null);
-  //const [isNearDestination, setIsNearDestination] = useState(false);
+  
   const isNearDestination = useMemo(() => {
-  if (!userLocation) return false;
+    if (!userLocation) return false;
+    if (status === 'navigating') {
+      return haversine(userLocation, NAGO_PARKING) <= ARRIVAL_RADIUS_M;
+    }
+    if (status === 'walking-to-goods') {
+      if (!selectedGoodsSpot) return false;
+      return haversine(userLocation, selectedGoodsSpot) <= ARRIVAL_RADIUS_M;
+    }
+    return false;
+  }, [userLocation, status, selectedGoodsSpot]);
   
-  if (status === 'navigating') {
-    return haversine(userLocation, NAGO_PARKING) <= ARRIVAL_RADIUS_M;
-  }
-  
-  if (status === 'walking-to-goods') {
-    if (!selectedGoodsSpot) return false;
-    return haversine(userLocation, selectedGoodsSpot) <= ARRIVAL_RADIUS_M;
-  }
-  
-  return false;
-}, [userLocation, status, selectedGoodsSpot]); // この3つのどれかが変われば即座に再計算される
-  
-  // 駐車場状態
   const [parkingStatus, setParkingStatus] = useState<ParkingStatus>('loading');
-
-  // 位置情報エラー状態
   const [geoError, setGeoError] = useState<'denied' | 'unavailable' | null>(null);
 
-  // refs
   const approachFiredRef = useRef(new Set<string>());
   const mapRef = useRef<google.maps.Map | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -345,7 +319,6 @@ export default function HomePage() {
   useEffect(() => { statusRef.current = status; }, [status]);
   useEffect(() => { selectedGoodsSpotRef.current = selectedGoodsSpot; }, [selectedGoodsSpot]);
 
-  // ルート全体をパネルに隠れないようフィット
   const fitMapToRoute = useCallback((result: google.maps.DirectionsResult) => {
     const map = mapRef.current;
     const bounds = result.routes[0]?.bounds;
@@ -359,10 +332,8 @@ export default function HomePage() {
     });
   }, []);
 
-  // 気象警報フック
   const { weatherAlert } = useWeatherAlert(isDisasterMode);
 
-  // Google Maps ロード
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string,
@@ -372,27 +343,16 @@ export default function HomePage() {
 
   const visibleSpots = useMemo(() => SPOTS_BY_CATEGORY[activeGenre], [activeGenre]);
 
-  // ── 起動ログ ────────────────────────────────────────────────────────────
-  // useEffect(() => { logEvent('LAUNCH'); }, []);
-  // JION 変更4 起動ログ変更 (6/5)
-    useEffect(() => {
-  let uid = localStorage.getItem("nago_tour_uid");
-  
-  if (!uid) {
-    uid = "usr_" + Math.random().toString(36).substring(2, 11);
-    localStorage.setItem("nago_tour_uid", uid);
-  }
-
-  // コンポーネントの状態（State）を更新（あとからの操作ボタン用）
-  setUserID(uid);
-
-  // 🔥 【最重要】Stateの userId ではなく、いま確定したばかりのローカル変数 `uid` を直接渡す
- // logEvent('LAUNCH', userId); 
-  // Jion 変更8 userIdからuid (useEffect終わるまではuserIdは反映されない)
+  useEffect(() => {
+    let uid = localStorage.getItem("nago_tour_uid");
+    if (!uid) {
+      uid = "usr_" + Math.random().toString(36).substring(2, 11);
+      localStorage.setItem("nago_tour_uid", uid);
+    }
+    setUserID(uid);
     logEvent('LAUNCH',uid);
-}, []);
+  }, []);
 
-  // ── 位置情報ウォッチ（status非依存）────────────────────────────────────
   useEffect(() => {
     if (!navigator.geolocation) return;
     const watchId = navigator.geolocation.watchPosition(
@@ -400,19 +360,11 @@ export default function HomePage() {
         const loc: LatLng = { lat: coords.latitude, lng: coords.longitude };
         setUserLocation(loc);
 
-        // 一定距離以上動いた時だけルート再計算をトリガー
         setRouteOrigin((prev) =>
           !prev || haversine(loc, prev) > ROUTE_RECALC_THRESHOLD_M ? loc : prev
         );
 
         const cur = statusRef.current;
-        // if (cur === 'navigating') {
-        //   setIsNearDestination(haversine(loc, NAGO_PARKING) <= ARRIVAL_RADIUS_M);
-        // }
-        // if (cur === 'walking-to-goods') {
-        //   const goal = selectedGoodsSpotRef.current;
-        //   setIsNearDestination(!!goal && haversine(loc, goal) <= ARRIVAL_RADIUS_M);
-        // }
         if (cur === 'completed') {
           [...SPOTS_BY_CATEGORY.food, ...SPOTS_BY_CATEGORY.shop].forEach((spot) => {
             if (!approachFiredRef.current.has(spot.id) && haversine(loc, spot) <= SPOT_APPROACH_M) {
@@ -429,27 +381,25 @@ export default function HomePage() {
       { enableHighAccuracy: true, timeout: 15_000, maximumAge: 0 }
     );
     return () => navigator.geolocation.clearWatch(watchId);
-  }, []);
-// アプリ起動後、最初の1回だけ現在地に視点を合わせる（以降は自動で動かさない）6/21修正3
-useEffect(() => {
-  if (userLocation && !isInitialCenteredRef.current) {
-    setMapCenter(userLocation);
-    isInitialCenteredRef.current = true;
-  }
-}, [userLocation]);
+  }, [userId]);
+
+  useEffect(() => {
+    if (userLocation && !isInitialCenteredRef.current) {
+      setMapCenter(userLocation);
+      isInitialCenteredRef.current = true;
+    }
+  }, [userLocation]);
   
-  // ── 周遊コース中、現在の目的地に到着したら自動で次へ進める ─────────
   useEffect(() => {
     if (!userLocation || status !== 'completed' || !isTripActive) return;
     if (tripCurrentIndex >= tripSpots.length) return;
     const target = tripSpots[tripCurrentIndex];
     if (haversine(userLocation, target) <= TRIP_STOP_ARRIVAL_M) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- advancing trip stop in response to GPS update from external watchPosition
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTripCurrentIndex((i) => i + 1);
     }
   }, [userLocation, status, isTripActive, tripCurrentIndex, tripSpots]);
 
-  // ── 駐車場ポーリング ────────────────────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
@@ -488,7 +438,6 @@ useEffect(() => {
     }
   };
 
-  // ── ルート計算（routeOrigin 変化時のみ）────────────────────────────────
   useEffect(() => {
     if (!isLoaded) return;
 
@@ -501,10 +450,10 @@ useEffect(() => {
     const currentRouteKey = isDisasterMode 
       ? 'disaster' 
       : `${status}-${selectedGoodsSpot?.id ?? ''}-${selectedSpot?.id ?? ''}-${isTripActive}-${tripSpots.length}`;
-    // 防災モード：徒歩のみ（GPS必須）
+    
     if (isDisasterMode) {
       if (!routeOrigin) {
-        /* eslint-disable react-hooks/set-state-in-effect -- mode switch may need to clear stale route */
+        /* eslint-disable react-hooks/set-state-in-effect */
         setDirections(null);
         setWalkingDuration(null);
         /* eslint-enable react-hooks/set-state-in-effect */
@@ -529,7 +478,7 @@ useEffect(() => {
             if (lastFittedKeyRef.current !== currentRouteKey) {
             fitMapToRoute(result);
             lastFittedKeyRef.current = currentRouteKey;
-            } //6/21 修正5 if 分追加
+            } 
           } else {
             setDirections(null);
             setWalkingDuration(null);
@@ -540,10 +489,8 @@ useEffect(() => {
       return () => { cancelled = true; };
     }
 
-    // GPS未取得時は道の駅許田（起点）にフォールバック
     const origin = routeOrigin ?? KYODA_ORIGIN;
 
-    // 駐車場ナビ：車ルートをマップ表示 ＋ 徒歩時間も取得
     if (status === 'navigating') {
       svc.route(
         { origin, destination: NAGO_PARKING, travelMode: google.maps.TravelMode.DRIVING },
@@ -576,7 +523,6 @@ useEffect(() => {
       return () => { cancelled = true; };
     }
 
-    // 駐車場到着後、選択したグッズ受取スポットへ徒歩
     if (status === 'walking-to-goods' && selectedGoodsSpot) {
       const dest = { lat: selectedGoodsSpot.lat, lng: selectedGoodsSpot.lng };
       svc.route(
@@ -602,7 +548,6 @@ useEffect(() => {
       return () => { cancelled = true; };
     }
 
-    // 周遊コース：複数スポットを順に徒歩で巡る
     if (status === 'completed' && isTripActive && tripSpots.length >= 2) {
       const finalDest = tripSpots[tripSpots.length - 1];
       const waypoints: google.maps.DirectionsWaypoint[] = tripSpots
@@ -645,7 +590,6 @@ useEffect(() => {
       return () => { cancelled = true; };
     }
 
-    // スポット詳細・案内中：徒歩ルートをマップ表示 ＋ 車時間も取得
     if (status === 'completed' && selectedSpot) {
       const dest = { lat: selectedSpot.lat, lng: selectedSpot.lng };
       svc.route(
@@ -685,7 +629,6 @@ useEffect(() => {
     setRouteError(null);
   }, [isLoaded, routeOrigin, isDisasterMode, status, selectedSpot, selectedGoodsSpot, isTripActive, tripSpots, fitMapToRoute]);
 
-  // リサイズ・パネル高変化時にルートを再フィット
   useEffect(() => {
     if (!directions) return;
     const refit = () => fitMapToRoute(directions);
@@ -698,8 +641,6 @@ useEffect(() => {
       window.removeEventListener('resize', refit);
     };
   }, [directions, fitMapToRoute]);
-
-  // ── アクションハンドラ ─────────────────────────────────────────────────
 
   const handleReset = () => {
     setStatus('initial');
@@ -715,7 +656,6 @@ useEffect(() => {
     setDrivingDuration(null);
     setWalkingDuration(null);
     setRouteError(null);
-    //setIsNearDestination(false);
     setPopupSpot(null);
     approachFiredRef.current.clear();
   };
@@ -766,48 +706,37 @@ useEffect(() => {
   const handleSelectGoodsSpot = (spot: Spot) => {
     setSelectedGoodsSpot(spot);
     setStatus('navigating');
-    //setIsNearDestination(false);
-    //logEvent('SPOT_SELECT', { spotId: spot.id, spotName: spot.name, role: 'goods' });
-      // JION 変更5 logevent変更 (6/5)
     logEvent('SPOT_SELECT',userId, { spotId: spot.id, spotName: spot.name, role: 'goods' });
   };
 
   const handleArrivedAtParking = () => {
     setStatus('walking-to-goods');
-   // setIsNearDestination(false);
   };
 
   const handleGoToSpotMode = () => {
     setStatus('completed');
-    //logEvent('SKIP_GOODS');
-     // JION 変更6 logevent変更 (6/5)
     logEvent('SKIP_GOODS',userId);
   };
 
   const handleGoodsReceived = () => {
     setStatus('exchanging');
-    // logEvent('GOODS_RECEIVED', {
-    //   spotId: selectedGoodsSpot?.id,
-    //   spotName: selectedGoodsSpot?.name,
-    // });
-      // JION 変更7 logevent変更 (6/5)
     logEvent('GOODS_RECEIVED',userId, {
       spotId: selectedGoodsSpot?.id,
       spotName: selectedGoodsSpot?.name,
     });
   };
+  
   const handleExchangeComplete = () => {
-  setStatus('completed');
-  if (typeof lastFittedKeyRef !== 'undefined') {
-    lastFittedKeyRef.current = '';
-  }
+    setStatus('completed');
+    if (typeof lastFittedKeyRef !== 'undefined') {
+      lastFittedKeyRef.current = '';
+    }
   };
+  
   const handleSelectSpot = (spot: Spot) => {
     setSelectedSpot(spot);
     setShowSpotDetail(true);
     setIsSpotNavigating(false);
-    //logEvent('SPOT_SELECT', { spotId: spot.id, spotName: spot.name });
-     // JION 変更8 logevent変更 (6/5)
     logEvent('SPOT_SELECT', userId,{ spotId: spot.id, spotName: spot.name });
   };
 
@@ -834,13 +763,10 @@ useEffect(() => {
     setWalkingDuration(null);
   };
 
-  // 距離計算の基準点（GPS優先、未取得なら駐車場）
   const distanceRef: LatLng = userLocation ?? NAGO_PARKING;
   const now = useMemo(() => new Date(nowTick), [nowTick]);
 
   const isUsingFallbackOrigin = !routeOrigin && !isDisasterMode;
-
-  // ─── レンダリング ──────────────────────────────────────────────────────────
 
   return (
     <main
@@ -853,8 +779,7 @@ useEffect(() => {
         {isLoaded ? (
           <GoogleMap
             mapContainerStyle={MAP_CONTAINER_STYLE}
-            //center={userLocation ?? KYODA_ORIGIN}
-            center = {mapCenter}// 6/21修正4
+            center={mapCenter}
             zoom={14}
             options={{ disableDefaultUI: true, clickableIcons: false }}
             onLoad={(map) => { mapRef.current = map; }}
@@ -872,7 +797,6 @@ useEffect(() => {
               />
             )}
 
-            {/* 現在地マーカー */}
             {userLocation && (
               <Marker
                 position={userLocation}
@@ -888,22 +812,19 @@ useEffect(() => {
               />
             )}
 
-            {/* 避難所マーカー（防災モード時） */}
             {isDisasterMode &&
               SHELTERS.map((s) => (
                 <Marker
                   key={s.id}
                   position={{ lat: s.lat, lng: s.lng }}
-                  title={`${s.name}　${s.address}`}
+                  title={`${s.name} ${s.address}`}
                   icon={buildIcon('#dc2626')}
                   label={{ text: '避', color: 'white', fontWeight: 'bold', fontSize: '12px' }}
                 />
               ))}
 
-            {/* スポット・駐車場マーカー（completed 時） */}
             {status === 'completed' && !isDisasterMode && (
               <>
-                {/* 駐車場マーカーは常時表示 */}
                 {SPOTS_BY_CATEGORY.parking.map((spot) => {
                   const s = getMarkerStyle(spot);
                   return (
@@ -917,7 +838,6 @@ useEffect(() => {
                   );
                 })}
 
-                {/* 周遊コース中：コース内スポットだけ番号付きで強調 */}
                 {isTripActive ? (
                   tripSpots.map((spot, i) => {
                     const state: TripStopState =
@@ -987,11 +907,10 @@ useEffect(() => {
       </div>
 
      <header className="absolute top-0 left-0 right-0 z-20 p-4 flex items-center justify-between pointer-events-none header-area">
-        
-        {/* 1. 左側ボタングループ (空にしてスペースを確保) */}
+        {/* 左側ボタングループ (空) */}
         <div className="flex items-center gap-2 pointer-events-auto"></div>
 
-        {/* 2. 中央：ロゴ画像 ＆ Chura Freshボタンを縦に配置 (重なりを100%回避) */}
+        {/* 中央：ロゴ画像 ＆ Chura Freshボタン */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 logo-container pointer-events-auto">
           <button
             onClick={handleReset}
@@ -1010,7 +929,6 @@ useEffect(() => {
             />
           </button>
 
-          {/* ── Chura Fresh とは？ ボタン (中央ロゴ直下に配置変更) ───────────────────── */}
           {!isDisasterMode && (
             <button
               onClick={() => setShowChuraFreshInfo(true)}
@@ -1022,25 +940,11 @@ useEffect(() => {
           )}
         </div>
 
-
-         {/* <div className="flex items-center gap-2 pointer-events-auto"> */}
-          {/* ── 防災モード切替ボタン (位置変更: 右側) ───────────────────────── 
-          {/* <button
-            onClick={() => setIsDisasterMode((v) => !v)}
-            aria-label={isDisasterMode ? '防災モードをオフにする' : '防災モードをオンにする'}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-bold shadow-lg text-sm transition-all ${
-              isDisasterMode
-                ? 'bg-red-600 text-white animate-pulse border border-red-400'
-                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-            }`}
-          >
-           // {isDisasterMode ? '🚨 防災モードON' : '🛡️ 防災モード'} 
-          </button> 
-          </div> */}
-
+        {/* 右側ボタングループ (空) */}
+        <div className="flex items-center gap-2 pointer-events-auto"></div>
       </header>
    
-      {/* {isDisasterMode && (
+      {isDisasterMode && (
         <>
           <div className="absolute top-4 left-4 right-44 z-20 bg-red-600 text-white px-4 py-3 rounded-2xl shadow-xl animate-bounce sm:right-auto sm:max-w-md">
             <p className="text-sm font-bold leading-snug">
@@ -1072,7 +976,7 @@ useEffect(() => {
                 </p>
               )}
             </div>
-            <
+            <a
               href="tel:119"
               aria-label="119番に電話する"
               className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-red-600 text-white text-base font-bold shadow-lg hover:bg-red-700 active:scale-95 transition-all"
@@ -1081,9 +985,11 @@ useEffect(() => {
             </a>
           </div>
         </>
-      )} */}
+      )}
 
-
+      {/* ══════════════════════════════════════════════════════════════
+          通常モード UI
+      ══════════════════════════════════════════════════════════════ */}
       {!isDisasterMode && (
         <div ref={panelRef} className="absolute bottom-0 left-0 right-0 z-10 bg-white px-4 pt-3 pb-4 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.15)] max-h-[40dvh] flex flex-col overflow-hidden sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl">
           
@@ -1723,11 +1629,12 @@ useEffect(() => {
                 </button>
               </div>
             )}
-
           </div> {/* ← 📜 可変スクロールエリアの終了 */}
-        </div> {/* ← 通常モード下部パネル全体の終了 */}
-      )} {/* ← {!isDisasterMode && ( の終了 */}
-{showChuraFreshInfo && (
+        </div>
+      )}
+
+      {/* ── Chura Fresh モーダル ────────────────────────────────── */}
+      {showChuraFreshInfo && (
         <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
           {/* 背景の半透明オーバーレイ（タップで閉じる） */}
           <div 
@@ -1740,7 +1647,6 @@ useEffect(() => {
             
             {/* 写真エリア */}
             <div className="w-full h-48 bg-blue-50 relative shrink-0 flex items-center justify-center">
-              {/* ▼ 実際の画像パスに変更してください ▼ */}
               <img 
                 src={churaFreshImg.src}
                 alt="Chura Fresh" 
