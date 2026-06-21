@@ -1028,14 +1028,14 @@ useEffect(() => {
           </button>
 
           {/* ── ホームボタン (位置変更: 右側) ─────────────────────────────── */}
-          {!isDisasterMode && (
-            <Link
-              href="/"
+          {status !== 'initial' && !isDisasterMode && (
+            <button
+              onClick={handleReset}
               aria-label="ホームへ戻る"
               className="w-10 h-10 flex items-center justify-center rounded-full bg-white/90 backdrop-blur border border-gray-200 shadow-md text-gray-700 text-lg hover:bg-gray-50 active:scale-95 transition-all"
             >
               🏠
-            </Link>
+            </button>
           )}
         </div>
       </header>
