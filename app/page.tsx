@@ -1740,7 +1740,7 @@ useEffect(() => {
             <div className="w-full h-48 bg-blue-50 relative shrink-0 flex items-center justify-center">
               {/* ▼ 実際の画像パスに変更してください ▼ */}
               <img 
-                src="/images/chura-fresh-sample.jpg" 
+                src='@/data/ChuraFresh.png'
                 alt="Chura Fresh" 
                 className="w-full h-full object-cover"
                 onError={(e) => {
