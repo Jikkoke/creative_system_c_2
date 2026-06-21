@@ -1087,7 +1087,7 @@ useEffect(() => {
       ══════════════════════════════════════════════════════════════ */}
       {!isDisasterMode && (
         <>
-          <div className={`absolute top-4 right-44 z-10 sm:right-auto sm:max-w-md ${status !== 'initial' ? 'left-20' : 'left-4'}`}>
+          {/* <div className={`absolute top-4 right-44 z-10 sm:right-auto sm:max-w-md ${status !== 'initial' ? 'left-20' : 'left-4'}`}>
             <div
               className={`flex items-center gap-2 px-4 py-3 rounded-2xl shadow-md text-xs font-bold backdrop-blur-sm border ${
                 parkingStatus === 'full'
@@ -1119,10 +1119,34 @@ useEffect(() => {
                 </div>
               )}
             </div>
-          </div>
+          </div> */}
 
-          <div ref={panelRef} className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-5 pb-8 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.15)] max-h-[50dvh] overflow-y-auto sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl sm:max-h-[50dvh]">
-
+          <div ref={panelRef} className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-5 pb-8 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.15)] max-h-[40dvh] overflow-y-auto sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl sm:max-h-[50dvh]">
+           <div
+              className={`flex items-center justify-between px-3 py-1.5 mb-2.5 rounded-xl text-[10px] font-bold border ${
+                parkingStatus === 'full'
+                  ? 'bg-red-50 border-red-200 text-red-700'
+                  : parkingStatus === 'open'
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                  : 'bg-gray-50 border-gray-200 text-gray-500'
+              }`}
+            >
+              <div className="flex items-center gap-1.5 truncate">
+                {parkingStatus === 'loading' && <><span className="animate-spin inline-block">⏳</span> 駐車場確認中...</>}
+                {parkingStatus === 'open' && <>🟢 市営駐車場 空きあり</>}
+                {parkingStatus === 'full' && <>🚨 市営駐車場 満車（臨時Pへ）</>}
+                {parkingStatus === 'error' && <>⚠️ 駐車場情報 取得エラー</>}
+              </div>
+              {parkingStatus === 'error' && (
+                <button
+                  onClick={retryParking}
+                  className="shrink-0 bg-gray-200 hover:bg-gray-300 px-2 py-0.5 rounded text-[9px] transition-colors"
+                >
+                  再試行
+                </button>
+              )}
+            </div>
+            
             {/* ステップインジケーター */}
             {(() => {
               // navigating と walking-to-goods は同じステップ（受取フェーズ）
@@ -1132,7 +1156,7 @@ useEffect(() => {
                 3;
               return (
                 <div
-                  className="flex items-center justify-center gap-2 mb-4"
+                  className="flex items-center justify-center gap-2 mb-2"
                   role="progressbar"
                   aria-label={`ステップ ${step} / 3`}
                   aria-valuenow={step}
@@ -1144,10 +1168,10 @@ useEffect(() => {
                       key={i}
                       className={`rounded-full transition-all duration-300 ${
                         i === step
-                          ? 'w-6 h-2 bg-blue-600'
+                          ? 'w-6 h-1.5 bg-blue-600'
                           : i < step
-                          ? 'w-2 h-2 bg-blue-300'
-                          : 'w-2 h-2 bg-gray-200'
+                          ? 'w-2 h-1.5 bg-blue-300'
+                          : 'w-2 h-1.5 bg-gray-200'
                       }`}
                     />
                   ))}
