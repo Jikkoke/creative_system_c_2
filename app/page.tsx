@@ -1040,7 +1040,7 @@ useEffect(() => {
 
       </header>
    
-      {isDisasterMode && (
+      {/* {isDisasterMode && (
         <>
           <div className="absolute top-4 left-4 right-44 z-20 bg-red-600 text-white px-4 py-3 rounded-2xl shadow-xl animate-bounce sm:right-auto sm:max-w-md">
             <p className="text-sm font-bold leading-snug">
@@ -1081,14 +1081,9 @@ useEffect(() => {
             </a>
           </div>
         </>
-      )}
+      )} */}
 
-      {/* ══════════════════════════════════════════════════════════════
-          通常モード UI
-      ══════════════════════════════════════════════════════════════ */}
-     {/* ══════════════════════════════════════════════════════════════
-          通常モード UI
-      ══════════════════════════════════════════════════════════════ */}
+
       {!isDisasterMode && (
         <div ref={panelRef} className="absolute bottom-0 left-0 right-0 z-10 bg-white px-4 pt-3 pb-4 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.15)] max-h-[40dvh] flex flex-col overflow-hidden sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl">
           
