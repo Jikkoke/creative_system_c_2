@@ -1158,18 +1158,18 @@ useEffect(() => {
 
                 <div className="space-y-1.5">
                   <p className="text-xs font-bold text-gray-600 px-1">
-                    🎁 グッズを受け取れるお店を選んでください
+                    🎁 Chura Freshを受け取れるお店を選んでください
                   </p>
                   {GOODS_SPOTS.length === 0 ? (
                     <p className="text-sm text-gray-500 py-3 text-center">
-                      グッズ受取スポットが登録されていません
+                      Chura Fresh受取スポットが登録されていません
                     </p>
                   ) : (
                     GOODS_SPOTS.map((spot) => (
                       <button
                         key={spot.id}
                         onClick={() => handleSelectGoodsSpot(spot)}
-                        aria-label={`${spot.name}でグッズを受け取りに向かう`}
+                        aria-label={`${spot.name}でChura Freshを受け取りに向かう`}
                         className="w-full flex items-center gap-3 p-2.5 rounded-2xl bg-blue-50 border border-blue-100 hover:bg-blue-100 active:scale-[0.98] transition-all shadow-sm text-left"
                       >
                         <span className="text-2xl">{spot.emoji}</span>
@@ -1193,7 +1193,7 @@ useEffect(() => {
 
                 <button
                   onClick={handleGoToSpotMode}
-                  aria-label="グッズ受取をスキップしてスポット観光モードへ"
+                  aria-label="Chura Fresh受取をスキップしてスポット観光モードへ"
                   className="w-full py-4 rounded-2xl bg-amber-500 text-white font-bold shadow-lg hover:bg-amber-600 active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                   <span>🗺️</span> 名護市内のおすすめスポット観光
@@ -1302,7 +1302,7 @@ useEffect(() => {
                 <button
                   onClick={handleGoodsReceived}
                   disabled={!isNearDestination}
-                  aria-label={isNearDestination ? 'グッズを受け取った' : `${selectedGoodsSpot.name}の100m以内に近づくと有効になります`}
+                  aria-label={isNearDestination ? 'Chura Freshを受け取った' : `${selectedGoodsSpot.name}の100m以内に近づくと有効になります`}
                   className={`w-full py-4 rounded-2xl text-white font-bold shadow-lg transition-all flex items-center justify-center gap-2 ${
                     isNearDestination
                       ? 'bg-emerald-500 hover:bg-emerald-600 active:scale-95'
@@ -1311,7 +1311,7 @@ useEffect(() => {
                 >
                   ✅{' '}
                   {isNearDestination
-                    ? `${selectedGoodsSpot.name}に到着・グッズを受け取った`
+                    ? `${selectedGoodsSpot.name}に到着・Chura Freshを受け取った`
                     : 'お店到着後に有効になります（100m以内）'}
                 </button>
               </div>
@@ -1322,7 +1322,7 @@ useEffect(() => {
                   <div className="bg-gradient-to-b from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-5 shadow-inner">
                     <span className="text-5xl animate-bounce inline-block mb-2">🎁</span>
                     <h3 className="font-extrabold text-gray-800 text-xl">
-                      ChuraFresh 特典引き換え
+                      ChuraFresh 引き換え
                     </h3>
                     <p className="text-xs text-blue-600 font-bold mt-1">
                       引換場所: {selectedGoodsSpot.emoji} {selectedGoodsSpot.name}
@@ -1334,7 +1334,7 @@ useEffect(() => {
                       ⚠️ 店舗スタッフの方へ
                     </p>
                     <p className="text-xs text-gray-600 mt-1 leading-relaxed">
-                      この画面を開いた状態で、対象の「香りのアトマイザー/グッズ」をお客様にお渡しください。お渡しが完了しましたら、下の確認ボタンを押してください。
+                      この画面を確認したら、Chura Freshをお客様にお渡しください。お渡しが完了しましたら、下の確認ボタンを押してください。
                     </p>
                   </div>
               
