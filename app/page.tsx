@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import churaFreshImg from '@/data/ChuraFresh.png';
+import nagodetourImg from '@/data/Nagodetour.png';
 import {
   GoogleMap,
   useJsApiLoader,
@@ -985,50 +986,59 @@ useEffect(() => {
         )}
       </div>
 
-      {/* ── ホームボタン ───────────────────────────────────────────────── */}
-      {status !== 'initial' && !isDisasterMode && (
-        <button
-          onClick={handleReset}
-          aria-label="ホームに戻る"
-          className="absolute top-4 left-4 z-30 w-11 h-11 flex items-center justify-center rounded-full bg-white text-gray-700 border border-gray-200 shadow-lg hover:bg-gray-50 active:scale-95 transition-all"
-        >
-          🏠
-        </button>
-      )}
+     <header className="absolute top-0 left-0 right-0 z-20 p-4 flex items-center justify-between pointer-events-none header-area">
+        
+        {/* 1. 左側ボタングループ */}
+        <div className="flex items-center gap-2 pointer-events-auto">
+          {/* ── Chura Fresh とは？ ボタン (位置変更: 左側) ───────────────────── */}
+          {!isDisasterMode && (
+            <button
+              onClick={() => setShowChuraFreshInfo(true)}
+              aria-label="Chura Freshについての説明を見る"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/90 backdrop-blur border border-blue-200 shadow-md text-blue-600 font-bold text-sm hover:bg-blue-50 active:scale-95 transition-all whitespace-nowrap"
+            >
+              🎁 Chura Freshとは？
+            </button>
+          )}
+        </div>
 
-      {/* ── 現在地に戻るボタン ─────────────────────────────────────────── */}
-      {userLocation && (
-        <button
-          onClick={handleRecenter}
-          aria-label="現在地に地図を戻す"
-          className="absolute top-20 right-4 z-20 w-11 h-11 flex items-center justify-center rounded-full bg-white text-blue-600 border border-gray-200 shadow-lg hover:bg-blue-50 active:scale-95 transition-all text-lg"
-        >
-          📍
-        </button>
-      )}
+        {/* 2. ロゴ画像 (上部中央) */}
+        {/* 既存の位置指定クラスを削除し、headerコンテナの中央に配置されるように調整 */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 logo-container pointer-events-auto">
+          <img
+            src=src={nagodetourImg.src} // image_0.png を public/logo.png として配置することを想定
+            alt="NAGO de TOUR ロゴ"
+            className="w-24 h-24 rounded-full border-2 border-white shadow-lg object-cover" // 円形にして写真のように
+          />
+        </div>
 
-      {/* ── 防災モード切替ボタン ───────────────────────────────────────── */}
-      <button
-        onClick={() => setIsDisasterMode((v) => !v)}
-        aria-label={isDisasterMode ? '防災モードをオフにする' : '防災モードをオンにする'}
-        className={`absolute top-4 right-4 z-20 flex items-center gap-1.5 px-4 py-2 rounded-full font-bold shadow-lg text-sm transition-all ${
-          isDisasterMode
-            ? 'bg-red-600 text-white animate-pulse border border-red-400'
-            : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-        }`}
-      >
-        {isDisasterMode ? '🚨 防災モードON' : '🛡️ 防災モード'}
-      </button>
-      {/* ── Chura Fresh とは？ ボタン (ここを追加) ───────────────────── */}
-      {!isDisasterMode && (
-        <button
-          onClick={() => setShowChuraFreshInfo(true)}
-          aria-label="Chura Freshについての説明を見る"
-          className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/90 backdrop-blur border border-blue-200 shadow-md text-blue-600 font-bold text-sm hover:bg-blue-50 active:scale-95 transition-all whitespace-nowrap"
-        >
-          🎁 Chura Freshとは？
-        </button>
-      )}
+        {/* 3. 右側ボタングループ */}
+        <div className="flex items-center gap-2 pointer-events-auto">
+          {/* ── 防災モード切替ボタン (位置変更: 右側) ───────────────────────── */}
+          <button
+            onClick={() => setIsDisasterMode((v) => !v)}
+            aria-label={isDisasterMode ? '防災モードをオフにする' : '防災モードをオンにする'}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-bold shadow-lg text-sm transition-all ${
+              isDisasterMode
+                ? 'bg-red-600 text-white animate-pulse border border-red-400'
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            {isDisasterMode ? '🚨 防災モードON' : '🛡️ 防災モード'}
+          </button>
+
+          {/* ── ホームボタン (位置変更: 右側) ─────────────────────────────── */}
+          {!isDisasterMode && (
+            <Link
+              href="/"
+              aria-label="ホームへ戻る"
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-white/90 backdrop-blur border border-gray-200 shadow-md text-gray-700 text-lg hover:bg-gray-50 active:scale-95 transition-all"
+            >
+              🏠
+            </Link>
+          )}
+        </div>
+      </header>
       {/* ══════════════════════════════════════════════════════════════
           防災モード UI
       ══════════════════════════════════════════════════════════════ */}
