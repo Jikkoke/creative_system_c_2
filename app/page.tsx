@@ -1034,12 +1034,10 @@ useEffect(() => {
             }`}
           >
            // {isDisasterMode ? '🚨 防災モードON' : '🛡️ 防災モード'} 
-          </button> 
+          </button> */
 
       </header>
-      {/* ══════════════════════════════════════════════════════════════
-          防災モード UI
-      ══════════════════════════════════════════════════════════════ */}
+   
       {isDisasterMode && (
         <>
           <div className="absolute top-4 left-4 right-44 z-20 bg-red-600 text-white px-4 py-3 rounded-2xl shadow-xl animate-bounce sm:right-auto sm:max-w-md">
