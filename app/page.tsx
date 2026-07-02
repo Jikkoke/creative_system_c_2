@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import churaFreshImg from '@/data/ChuraFresh.png';
+import nagodetourImg from '@/data/nagodetour.png';
 import {
   GoogleMap,
   useJsApiLoader,
@@ -15,12 +17,12 @@ import { useWeatherAlert } from '@/hooks/useWeatherAlert';
 // ─── 静的データ ──────────────────────────────────────────────────────────────
 
 const KYODA_ORIGIN = { lat: 26.6478, lng: 128.0196 }; // 道の駅許田（起点）
-const NAGO_PARKING = { lat: 26.5915, lng: 127.9845 }; // 名護市営駐車場（目的地）
+const NAGO_PARKING = { lat: 26.589103, lng: 127.9840, }; // 名護市営駐車場（目的地）
 
 // ─── しきい値・間隔 ──────────────────────────────────────────────────────────
 
-const ARRIVAL_RADIUS_M = 100;          // 駐車場到着判定
-const SPOT_APPROACH_M = 200;           // スポット接近イベント
+const ARRIVAL_RADIUS_M = 500;          // 駐車場到着判定
+const SPOT_APPROACH_M = 500;           // スポット接近イベント
 const ROUTE_RECALC_THRESHOLD_M = 100;  // ルート再計算する移動距離
 const PARKING_POLL_INTERVAL_MS = 30_000;
 const WALK_SPEED_M_PER_MIN = 80;       // 徒歩速度（距離 → 分の概算用）
@@ -58,7 +60,7 @@ type Shelter = {
   lng: number;
 };
 
-type Status = 'initial' | 'navigating' | 'walking-to-goods' | 'completed';
+type Status = 'initial' | 'navigating' | 'walking-to-goods' | 'exchanging' | 'completed';
 type Genre = 'food' | 'shop';
 type ParkingStatus = 'loading' | 'open' | 'full' | 'error';
 type LatLng = { lat: number; lng: number };
@@ -126,9 +128,8 @@ const SHELTERS: Shelter[] = loadValidShelters(sheltersData as unknown[]);
 const GOODS_SPOTS: Spot[] = ALL_SPOTS.filter((s) => s.goodsPickup);
 
 // ─── GAS エンドポイント（環境変数） ────────────────────────────────────────
-
-const GAS_LOG_URL = process.env.NEXT_PUBLIC_GAS_LOG_URL ?? '';
 const GAS_PARKING_URL = process.env.NEXT_PUBLIC_GAS_PARKING_URL ?? '';
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzPOLKu-JD6Z6eLN9VbHZUZ9BL6B5Dmtv7y31dorcOAmeMbvYJaC6e5fWatBBBGyL9b/exec";
 
 // ─── ユーティリティ ──────────────────────────────────────────────────────────
 
@@ -179,13 +180,15 @@ function getOpenStatus(spot: Spot, now: Date = new Date()): OpenStatus {
 
 type LogEvent = 'LAUNCH' | 'GOODS_RECEIVED' | 'SKIP_GOODS' | 'SPOT_SELECT' | 'APPROACH_200M';
 
-async function logEvent(event: LogEvent, payload?: Record<string, unknown>) {
-  if (!GAS_LOG_URL) return;
+async function logEvent(event: LogEvent, userId:string,payload?: Record<string, unknown>) {
+  if (!GAS_URL) return;
+  let type = "post_user";
   try {
-    await fetch(GAS_LOG_URL, {
+    await fetch(GAS_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ event, ts: Date.now(), ...payload }),
+      mode:'cors',
+      headers: { 'Content-Type': 'text/plain'},
+      body: JSON.stringify({type,event, userId,ts: Date.now(), ...payload }),
     });
   } catch {
     // fire-and-forget
@@ -262,6 +265,7 @@ export default function HomePage() {
   // UI 状態
   const [status, setStatus] = useState<Status>('initial');
   const [isDisasterMode, setIsDisasterMode] = useState(false);
+  const [showChuraFreshInfo, setShowChuraFreshInfo] = useState(false);
   const [activeGenre, setActiveGenre] = useState<Genre>('food');
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
   const [showSpotDetail, setShowSpotDetail] = useState(false);
@@ -272,32 +276,39 @@ export default function HomePage() {
   const [isTripActive, setIsTripActive] = useState(false);
   const [tripDuration, setTripDuration] = useState<string | null>(null);
   const [tripCurrentIndex, setTripCurrentIndex] = useState(0);
+  const [userId,setUserID] = useState("");
+  const [mapCenter, setMapCenter] = useState<LatLng>(KYODA_ORIGIN);
+  const isInitialCenteredRef = useRef(false);
+  const lastFittedKeyRef = useRef<string>('');
 
-  // 「現在時刻」を1分ごとに進める（営業中判定のリアルタイム更新用）
   const [nowTick, setNowTick] = useState<number>(() => Date.now());
   useEffect(() => {
     const id = setInterval(() => setNowTick(Date.now()), 60_000);
     return () => clearInterval(id);
   }, []);
 
-  // 位置・ルート状態
-  // userLocation: マーカー表示用（常時更新）
-  // routeOrigin: ルート計算用（しきい値以上動いた時だけ更新）
   const [userLocation, setUserLocation] = useState<LatLng | null>(null);
   const [routeOrigin, setRouteOrigin] = useState<LatLng | null>(null);
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const [drivingDuration, setDrivingDuration] = useState<string | null>(null);
   const [walkingDuration, setWalkingDuration] = useState<string | null>(null);
   const [routeError, setRouteError] = useState<string | null>(null);
-  const [isNearDestination, setIsNearDestination] = useState(false);
-
-  // 駐車場状態
+  
+  const isNearDestination = useMemo(() => {
+    if (!userLocation) return false;
+    if (status === 'navigating') {
+      return haversine(userLocation, NAGO_PARKING) <= ARRIVAL_RADIUS_M;
+    }
+    if (status === 'walking-to-goods') {
+      if (!selectedGoodsSpot) return false;
+      return haversine(userLocation, selectedGoodsSpot) <= ARRIVAL_RADIUS_M;
+    }
+    return false;
+  }, [userLocation, status, selectedGoodsSpot]);
+  
   const [parkingStatus, setParkingStatus] = useState<ParkingStatus>('loading');
-
-  // 位置情報エラー状態
   const [geoError, setGeoError] = useState<'denied' | 'unavailable' | null>(null);
 
-  // refs
   const approachFiredRef = useRef(new Set<string>());
   const mapRef = useRef<google.maps.Map | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -308,7 +319,6 @@ export default function HomePage() {
   useEffect(() => { statusRef.current = status; }, [status]);
   useEffect(() => { selectedGoodsSpotRef.current = selectedGoodsSpot; }, [selectedGoodsSpot]);
 
-  // ルート全体をパネルに隠れないようフィット
   const fitMapToRoute = useCallback((result: google.maps.DirectionsResult) => {
     const map = mapRef.current;
     const bounds = result.routes[0]?.bounds;
@@ -322,10 +332,8 @@ export default function HomePage() {
     });
   }, []);
 
-  // 気象警報フック
   const { weatherAlert } = useWeatherAlert(isDisasterMode);
 
-  // Google Maps ロード
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string,
@@ -335,10 +343,16 @@ export default function HomePage() {
 
   const visibleSpots = useMemo(() => SPOTS_BY_CATEGORY[activeGenre], [activeGenre]);
 
-  // ── 起動ログ ────────────────────────────────────────────────────────────
-  useEffect(() => { logEvent('LAUNCH'); }, []);
+  useEffect(() => {
+    let uid = localStorage.getItem("nago_tour_uid");
+    if (!uid) {
+      uid = "usr_" + Math.random().toString(36).substring(2, 11);
+      localStorage.setItem("nago_tour_uid", uid);
+    }
+    setUserID(uid);
+    logEvent('LAUNCH',uid);
+  }, []);
 
-  // ── 位置情報ウォッチ（status非依存）────────────────────────────────────
   useEffect(() => {
     if (!navigator.geolocation) return;
     const watchId = navigator.geolocation.watchPosition(
@@ -346,24 +360,16 @@ export default function HomePage() {
         const loc: LatLng = { lat: coords.latitude, lng: coords.longitude };
         setUserLocation(loc);
 
-        // 一定距離以上動いた時だけルート再計算をトリガー
         setRouteOrigin((prev) =>
           !prev || haversine(loc, prev) > ROUTE_RECALC_THRESHOLD_M ? loc : prev
         );
 
         const cur = statusRef.current;
-        if (cur === 'navigating') {
-          setIsNearDestination(haversine(loc, NAGO_PARKING) <= ARRIVAL_RADIUS_M);
-        }
-        if (cur === 'walking-to-goods') {
-          const goal = selectedGoodsSpotRef.current;
-          setIsNearDestination(!!goal && haversine(loc, goal) <= ARRIVAL_RADIUS_M);
-        }
         if (cur === 'completed') {
           [...SPOTS_BY_CATEGORY.food, ...SPOTS_BY_CATEGORY.shop].forEach((spot) => {
             if (!approachFiredRef.current.has(spot.id) && haversine(loc, spot) <= SPOT_APPROACH_M) {
               approachFiredRef.current.add(spot.id);
-              logEvent('APPROACH_200M', { spotId: spot.id, spotName: spot.name });
+              logEvent('APPROACH_200M', userId,{ spotId: spot.id, spotName: spot.name });
             }
           });
         }
@@ -375,20 +381,25 @@ export default function HomePage() {
       { enableHighAccuracy: true, timeout: 15_000, maximumAge: 0 }
     );
     return () => navigator.geolocation.clearWatch(watchId);
-  }, []);
+  }, [userId]);
 
-  // ── 周遊コース中、現在の目的地に到着したら自動で次へ進める ─────────
+  useEffect(() => {
+    if (userLocation && !isInitialCenteredRef.current) {
+      setMapCenter(userLocation);
+      isInitialCenteredRef.current = true;
+    }
+  }, [userLocation]);
+  
   useEffect(() => {
     if (!userLocation || status !== 'completed' || !isTripActive) return;
     if (tripCurrentIndex >= tripSpots.length) return;
     const target = tripSpots[tripCurrentIndex];
     if (haversine(userLocation, target) <= TRIP_STOP_ARRIVAL_M) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- advancing trip stop in response to GPS update from external watchPosition
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTripCurrentIndex((i) => i + 1);
     }
   }, [userLocation, status, isTripActive, tripCurrentIndex, tripSpots]);
 
-  // ── 駐車場ポーリング ────────────────────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
@@ -427,7 +438,6 @@ export default function HomePage() {
     }
   };
 
-  // ── ルート計算（routeOrigin 変化時のみ）────────────────────────────────
   useEffect(() => {
     if (!isLoaded) return;
 
@@ -437,11 +447,13 @@ export default function HomePage() {
     const svc = dirSvcRef.current;
 
     let cancelled = false;
-
-    // 防災モード：徒歩のみ（GPS必須）
+    const currentRouteKey = isDisasterMode 
+      ? 'disaster' 
+      : `${status}-${selectedGoodsSpot?.id ?? ''}-${selectedSpot?.id ?? ''}-${isTripActive}-${tripSpots.length}`;
+    
     if (isDisasterMode) {
       if (!routeOrigin) {
-        /* eslint-disable react-hooks/set-state-in-effect -- mode switch may need to clear stale route */
+        /* eslint-disable react-hooks/set-state-in-effect */
         setDirections(null);
         setWalkingDuration(null);
         /* eslint-enable react-hooks/set-state-in-effect */
@@ -462,7 +474,11 @@ export default function HomePage() {
             setDirections(result);
             setWalkingDuration(result.routes[0]?.legs[0]?.duration?.text ?? null);
             setRouteError(null);
+            
+            if (lastFittedKeyRef.current !== currentRouteKey) {
             fitMapToRoute(result);
+            lastFittedKeyRef.current = currentRouteKey;
+            } 
           } else {
             setDirections(null);
             setWalkingDuration(null);
@@ -473,10 +489,8 @@ export default function HomePage() {
       return () => { cancelled = true; };
     }
 
-    // GPS未取得時は道の駅許田（起点）にフォールバック
     const origin = routeOrigin ?? KYODA_ORIGIN;
 
-    // 駐車場ナビ：車ルートをマップ表示 ＋ 徒歩時間も取得
     if (status === 'navigating') {
       svc.route(
         { origin, destination: NAGO_PARKING, travelMode: google.maps.TravelMode.DRIVING },
@@ -486,7 +500,10 @@ export default function HomePage() {
             setDirections(result);
             setDrivingDuration(result.routes[0]?.legs[0]?.duration?.text ?? null);
             setRouteError(null);
+            if (lastFittedKeyRef.current !== currentRouteKey) {
             fitMapToRoute(result);
+            lastFittedKeyRef.current = currentRouteKey;
+            } 
           } else {
             setDirections(null);
             setDrivingDuration(null);
@@ -506,7 +523,6 @@ export default function HomePage() {
       return () => { cancelled = true; };
     }
 
-    // 駐車場到着後、選択したグッズ受取スポットへ徒歩
     if (status === 'walking-to-goods' && selectedGoodsSpot) {
       const dest = { lat: selectedGoodsSpot.lat, lng: selectedGoodsSpot.lng };
       svc.route(
@@ -517,7 +533,10 @@ export default function HomePage() {
             setDirections(result);
             setWalkingDuration(result.routes[0]?.legs[0]?.duration?.text ?? null);
             setRouteError(null);
+            if (lastFittedKeyRef.current !== currentRouteKey) {
             fitMapToRoute(result);
+            lastFittedKeyRef.current = currentRouteKey;
+            } 
           } else {
             setDirections(null);
             setWalkingDuration(null);
@@ -529,7 +548,6 @@ export default function HomePage() {
       return () => { cancelled = true; };
     }
 
-    // 周遊コース：複数スポットを順に徒歩で巡る
     if (status === 'completed' && isTripActive && tripSpots.length >= 2) {
       const finalDest = tripSpots[tripSpots.length - 1];
       const waypoints: google.maps.DirectionsWaypoint[] = tripSpots
@@ -558,7 +576,10 @@ export default function HomePage() {
             setWalkingDuration(null);
             setDrivingDuration(null);
             setRouteError(null);
+            if (lastFittedKeyRef.current !== currentRouteKey) {
             fitMapToRoute(result);
+            lastFittedKeyRef.current = currentRouteKey;
+            } 
           } else {
             setDirections(null);
             setTripDuration(null);
@@ -569,7 +590,6 @@ export default function HomePage() {
       return () => { cancelled = true; };
     }
 
-    // スポット詳細・案内中：徒歩ルートをマップ表示 ＋ 車時間も取得
     if (status === 'completed' && selectedSpot) {
       const dest = { lat: selectedSpot.lat, lng: selectedSpot.lng };
       svc.route(
@@ -580,7 +600,10 @@ export default function HomePage() {
             setDirections(result);
             setWalkingDuration(result.routes[0]?.legs[0]?.duration?.text ?? null);
             setRouteError(null);
+            if (lastFittedKeyRef.current !== currentRouteKey) {
             fitMapToRoute(result);
+            lastFittedKeyRef.current = currentRouteKey;
+            } 
           } else {
             setDirections(null);
             setWalkingDuration(null);
@@ -606,7 +629,6 @@ export default function HomePage() {
     setRouteError(null);
   }, [isLoaded, routeOrigin, isDisasterMode, status, selectedSpot, selectedGoodsSpot, isTripActive, tripSpots, fitMapToRoute]);
 
-  // リサイズ・パネル高変化時にルートを再フィット
   useEffect(() => {
     if (!directions) return;
     const refit = () => fitMapToRoute(directions);
@@ -619,8 +641,6 @@ export default function HomePage() {
       window.removeEventListener('resize', refit);
     };
   }, [directions, fitMapToRoute]);
-
-  // ── アクションハンドラ ─────────────────────────────────────────────────
 
   const handleReset = () => {
     setStatus('initial');
@@ -636,7 +656,6 @@ export default function HomePage() {
     setDrivingDuration(null);
     setWalkingDuration(null);
     setRouteError(null);
-    setIsNearDestination(false);
     setPopupSpot(null);
     approachFiredRef.current.clear();
   };
@@ -687,33 +706,38 @@ export default function HomePage() {
   const handleSelectGoodsSpot = (spot: Spot) => {
     setSelectedGoodsSpot(spot);
     setStatus('navigating');
-    setIsNearDestination(false);
-    logEvent('SPOT_SELECT', { spotId: spot.id, spotName: spot.name, role: 'goods' });
+    logEvent('SPOT_SELECT',userId, { spotId: spot.id, spotName: spot.name, role: 'goods' });
   };
 
   const handleArrivedAtParking = () => {
     setStatus('walking-to-goods');
-    setIsNearDestination(false);
   };
 
   const handleGoToSpotMode = () => {
     setStatus('completed');
-    logEvent('SKIP_GOODS');
+    logEvent('SKIP_GOODS',userId);
   };
 
   const handleGoodsReceived = () => {
-    setStatus('completed');
-    logEvent('GOODS_RECEIVED', {
+    setStatus('exchanging');
+    logEvent('GOODS_RECEIVED',userId, {
       spotId: selectedGoodsSpot?.id,
       spotName: selectedGoodsSpot?.name,
     });
   };
-
+  
+  const handleExchangeComplete = () => {
+    setStatus('completed');
+    if (typeof lastFittedKeyRef !== 'undefined') {
+      lastFittedKeyRef.current = '';
+    }
+  };
+  
   const handleSelectSpot = (spot: Spot) => {
     setSelectedSpot(spot);
     setShowSpotDetail(true);
     setIsSpotNavigating(false);
-    logEvent('SPOT_SELECT', { spotId: spot.id, spotName: spot.name });
+    logEvent('SPOT_SELECT', userId,{ spotId: spot.id, spotName: spot.name });
   };
 
   const handleStartSpotRoute = () => {
@@ -739,13 +763,10 @@ export default function HomePage() {
     setWalkingDuration(null);
   };
 
-  // 距離計算の基準点（GPS優先、未取得なら駐車場）
   const distanceRef: LatLng = userLocation ?? NAGO_PARKING;
   const now = useMemo(() => new Date(nowTick), [nowTick]);
 
   const isUsingFallbackOrigin = !routeOrigin && !isDisasterMode;
-
-  // ─── レンダリング ──────────────────────────────────────────────────────────
 
   return (
     <main
@@ -758,7 +779,7 @@ export default function HomePage() {
         {isLoaded ? (
           <GoogleMap
             mapContainerStyle={MAP_CONTAINER_STYLE}
-            center={userLocation ?? KYODA_ORIGIN}
+            center={mapCenter}
             zoom={14}
             options={{ disableDefaultUI: true, clickableIcons: false }}
             onLoad={(map) => { mapRef.current = map; }}
@@ -776,7 +797,6 @@ export default function HomePage() {
               />
             )}
 
-            {/* 現在地マーカー */}
             {userLocation && (
               <Marker
                 position={userLocation}
@@ -792,22 +812,19 @@ export default function HomePage() {
               />
             )}
 
-            {/* 避難所マーカー（防災モード時） */}
             {isDisasterMode &&
               SHELTERS.map((s) => (
                 <Marker
                   key={s.id}
                   position={{ lat: s.lat, lng: s.lng }}
-                  title={`${s.name}　${s.address}`}
+                  title={`${s.name} ${s.address}`}
                   icon={buildIcon('#dc2626')}
                   label={{ text: '避', color: 'white', fontWeight: 'bold', fontSize: '12px' }}
                 />
               ))}
 
-            {/* スポット・駐車場マーカー（completed 時） */}
             {status === 'completed' && !isDisasterMode && (
               <>
-                {/* 駐車場マーカーは常時表示 */}
                 {SPOTS_BY_CATEGORY.parking.map((spot) => {
                   const s = getMarkerStyle(spot);
                   return (
@@ -821,7 +838,6 @@ export default function HomePage() {
                   );
                 })}
 
-                {/* 周遊コース中：コース内スポットだけ番号付きで強調 */}
                 {isTripActive ? (
                   tripSpots.map((spot, i) => {
                     const state: TripStopState =
@@ -890,44 +906,44 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* ── ホームボタン ───────────────────────────────────────────────── */}
-      {status !== 'initial' && !isDisasterMode && (
-        <button
-          onClick={handleReset}
-          aria-label="ホームに戻る"
-          className="absolute top-4 left-4 z-30 w-11 h-11 flex items-center justify-center rounded-full bg-white text-gray-700 border border-gray-200 shadow-lg hover:bg-gray-50 active:scale-95 transition-all"
-        >
-          🏠
-        </button>
-      )}
+     <header className="absolute top-0 left-0 right-0 z-20 p-4 flex items-center justify-between pointer-events-none header-area">
+        {/* 左側ボタングループ (空) */}
+        <div className="flex items-center gap-2 pointer-events-auto"></div>
 
-      {/* ── 現在地に戻るボタン ─────────────────────────────────────────── */}
-      {userLocation && (
-        <button
-          onClick={handleRecenter}
-          aria-label="現在地に地図を戻す"
-          className="absolute top-20 right-4 z-20 w-11 h-11 flex items-center justify-center rounded-full bg-white text-blue-600 border border-gray-200 shadow-lg hover:bg-blue-50 active:scale-95 transition-all text-lg"
-        >
-          📍
-        </button>
-      )}
+        {/* 中央：ロゴ画像 ＆ Chura Freshボタン */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 logo-container pointer-events-auto">
+          <button
+            onClick={handleReset}
+            disabled={status === 'initial' || isDisasterMode}
+            aria-label="ホームへ戻る"
+            className={`rounded-full transition-all ${
+              status !== 'initial' && !isDisasterMode 
+                ? 'active:scale-95 hover:opacity-90 cursor-pointer' 
+                : 'cursor-default'
+            }`}
+          >
+            <img
+              src={nagodetourImg.src}
+              alt="NAGO de TOUR ロゴ"
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-white shadow-lg object-cover transition-all"
+            />
+          </button>
 
-      {/* ── 防災モード切替ボタン ───────────────────────────────────────── */}
-      <button
-        onClick={() => setIsDisasterMode((v) => !v)}
-        aria-label={isDisasterMode ? '防災モードをオフにする' : '防災モードをオンにする'}
-        className={`absolute top-4 right-4 z-20 flex items-center gap-1.5 px-4 py-2 rounded-full font-bold shadow-lg text-sm transition-all ${
-          isDisasterMode
-            ? 'bg-red-600 text-white animate-pulse border border-red-400'
-            : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-        }`}
-      >
-        {isDisasterMode ? '🚨 防災モードON' : '🛡️ 防災モード'}
-      </button>
+          {!isDisasterMode && (
+            <button
+              onClick={() => setShowChuraFreshInfo(true)}
+              aria-label="Chura Freshについての説明を見る"
+              className="flex items-center gap-1 px-3 py-1 rounded-full bg-white/95 backdrop-blur border border-blue-200 shadow-sm text-blue-600 font-bold text-xs hover:bg-blue-50 active:scale-95 transition-all whitespace-nowrap"
+            >
+              🎁 Chura Freshとは？
+            </button>
+          )}
+        </div>
 
-      {/* ══════════════════════════════════════════════════════════════
-          防災モード UI
-      ══════════════════════════════════════════════════════════════ */}
+        {/* 右側ボタングループ (空) */}
+        <div className="flex items-center gap-2 pointer-events-auto"></div>
+      </header>
+   
       {isDisasterMode && (
         <>
           <div className="absolute top-4 left-4 right-44 z-20 bg-red-600 text-white px-4 py-3 rounded-2xl shadow-xl animate-bounce sm:right-auto sm:max-w-md">
@@ -975,53 +991,45 @@ export default function HomePage() {
           通常モード UI
       ══════════════════════════════════════════════════════════════ */}
       {!isDisasterMode && (
-        <>
-          <div className={`absolute top-4 right-44 z-10 sm:right-auto sm:max-w-md ${status !== 'initial' ? 'left-20' : 'left-4'}`}>
+        <div ref={panelRef} className="absolute bottom-0 left-0 right-0 z-10 bg-white px-4 pt-3 pb-4 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.15)] max-h-[40dvh] flex flex-col overflow-hidden sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl">
+          
+          {/* 📌 【上部固定エリア】 */}
+          <div className="shrink-0 bg-white z-10 pb-1">
+            {/* 駐車場ステータス */}
             <div
-              className={`flex items-center gap-2 px-4 py-3 rounded-2xl shadow-md text-xs font-bold backdrop-blur-sm border ${
+              className={`flex items-center justify-between px-3 py-1.5 mb-2 rounded-xl text-[10px] font-bold border ${
                 parkingStatus === 'full'
-                  ? 'bg-red-50/90 border-red-200 text-red-700'
+                  ? 'bg-red-50 border-red-200 text-red-700'
                   : parkingStatus === 'open'
-                  ? 'bg-emerald-50/90 border-emerald-200 text-emerald-700'
-                  : 'bg-white/80 border-gray-200 text-gray-500'
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                  : 'bg-gray-50 border-gray-200 text-gray-500'
               }`}
             >
-              {parkingStatus === 'loading' && (
-                <><span className="animate-spin inline-block">⏳</span> 駐車場情報を取得中...</>
-              )}
-              {parkingStatus === 'open' && (
-                <>🟢 市営駐車場：空車あり（スムーズに駐車できます）</>
-              )}
-              {parkingStatus === 'full' && (
-                <>🚨 市営駐車場：満車（周辺の臨時駐車場へ向かってください）</>
-              )}
+              <div className="flex items-center gap-1.5 truncate">
+                {parkingStatus === 'loading' && <><span className="animate-spin inline-block">⏳</span> 駐車場確認中...</>}
+                {parkingStatus === 'open' && <>🟢 市営駐車場 空きあり</>}
+                {parkingStatus === 'full' && <>🚨 市営駐車場 満車（臨時Pへ）</>}
+                {parkingStatus === 'error' && <>⚠️ 駐車場情報 取得エラー</>}
+              </div>
               {parkingStatus === 'error' && (
-                <div className="flex items-center gap-2 w-full">
-                  <span>⚠️ 駐車場情報を取得できませんでした</span>
-                  <button
-                    onClick={retryParking}
-                    aria-label="駐車場情報を再取得する"
-                    className="ml-auto shrink-0 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold px-3 py-1 rounded-full transition-colors"
-                  >
-                    再試行
-                  </button>
-                </div>
+                <button
+                  onClick={retryParking}
+                  className="shrink-0 bg-gray-200 hover:bg-gray-300 px-2 py-0.5 rounded text-[9px] transition-colors"
+                >
+                  再試行
+                </button>
               )}
             </div>
-          </div>
-
-          <div ref={panelRef} className="absolute bottom-0 left-0 right-0 z-10 bg-white px-6 pt-5 pb-8 rounded-t-[28px] shadow-[0_-10px_30px_rgba(0,0,0,0.15)] max-h-[50dvh] overflow-y-auto sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-3xl sm:max-h-[50dvh]">
-
+            
             {/* ステップインジケーター */}
             {(() => {
-              // navigating と walking-to-goods は同じステップ（受取フェーズ）
               const step =
                 status === 'initial' ? 1 :
                 status === 'navigating' || status === 'walking-to-goods' ? 2 :
                 3;
               return (
                 <div
-                  className="flex items-center justify-center gap-2 mb-4"
+                  className="flex items-center justify-center gap-2 mb-2"
                   role="progressbar"
                   aria-label={`ステップ ${step} / 3`}
                   aria-valuenow={step}
@@ -1033,16 +1041,20 @@ export default function HomePage() {
                       key={i}
                       className={`rounded-full transition-all duration-300 ${
                         i === step
-                          ? 'w-6 h-2 bg-blue-600'
+                          ? 'w-6 h-1.5 bg-blue-600'
                           : i < step
-                          ? 'w-2 h-2 bg-blue-300'
-                          : 'w-2 h-2 bg-gray-200'
+                          ? 'w-2 h-1.5 bg-blue-300'
+                          : 'w-2 h-1.5 bg-gray-200'
                       }`}
                     />
                   ))}
                 </div>
               );
             })()}
+          </div>
+
+          {/* 📜 【可変スクロールエリア】ここから下のコンテンツだけがスクロールします */}
+          <div className="overflow-y-auto flex-1 pr-0.5 pb-2 scrollbar-hide">
 
             {/* A. 初期状態 */}
             {status === 'initial' && (
@@ -1054,18 +1066,18 @@ export default function HomePage() {
 
                 <div className="space-y-1.5">
                   <p className="text-xs font-bold text-gray-600 px-1">
-                    🎁 グッズを受け取れるお店を選んでください
+                    🎁 Chura Freshを受け取れるお店を選んでください
                   </p>
                   {GOODS_SPOTS.length === 0 ? (
                     <p className="text-sm text-gray-500 py-3 text-center">
-                      グッズ受取スポットが登録されていません
+                      Chura Fresh受取スポットが登録されていません
                     </p>
                   ) : (
                     GOODS_SPOTS.map((spot) => (
                       <button
                         key={spot.id}
                         onClick={() => handleSelectGoodsSpot(spot)}
-                        aria-label={`${spot.name}でグッズを受け取りに向かう`}
+                        aria-label={`${spot.name}でChura Freshを受け取りに向かう`}
                         className="w-full flex items-center gap-3 p-2.5 rounded-2xl bg-blue-50 border border-blue-100 hover:bg-blue-100 active:scale-[0.98] transition-all shadow-sm text-left"
                       >
                         <span className="text-2xl">{spot.emoji}</span>
@@ -1089,7 +1101,7 @@ export default function HomePage() {
 
                 <button
                   onClick={handleGoToSpotMode}
-                  aria-label="グッズ受取をスキップしてスポット観光モードへ"
+                  aria-label="Chura Fresh受取をスキップしてスポット観光モードへ"
                   className="w-full py-4 rounded-2xl bg-amber-500 text-white font-bold shadow-lg hover:bg-amber-600 active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                   <span>🗺️</span> 名護市内のおすすめスポット観光
@@ -1198,7 +1210,7 @@ export default function HomePage() {
                 <button
                   onClick={handleGoodsReceived}
                   disabled={!isNearDestination}
-                  aria-label={isNearDestination ? 'グッズを受け取った' : `${selectedGoodsSpot.name}の100m以内に近づくと有効になります`}
+                  aria-label={isNearDestination ? 'Chura Freshを受け取った' : `${selectedGoodsSpot.name}の100m以内に近づくと有効になります`}
                   className={`w-full py-4 rounded-2xl text-white font-bold shadow-lg transition-all flex items-center justify-center gap-2 ${
                     isNearDestination
                       ? 'bg-emerald-500 hover:bg-emerald-600 active:scale-95'
@@ -1207,12 +1219,48 @@ export default function HomePage() {
                 >
                   ✅{' '}
                   {isNearDestination
-                    ? `${selectedGoodsSpot.name}に到着・グッズを受け取った`
+                    ? `${selectedGoodsSpot.name}に到着・Chura Freshを受け取った`
                     : 'お店到着後に有効になります（100m以内）'}
                 </button>
               </div>
             )}
 
+            {/* B-3. 引き換え画面 */}
+            {status === 'exchanging' && selectedGoodsSpot && (
+              <div key="exchanging-goods" className="space-y-5 animate-panel-enter text-center">
+                <div className="bg-gradient-to-b from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-5 shadow-inner">
+                  <span className="text-5xl animate-bounce inline-block mb-2">🎁</span>
+                  <h3 className="font-extrabold text-gray-800 text-xl">
+                    ChuraFresh 引き換え
+                  </h3>
+                  <p className="text-xs text-blue-600 font-bold mt-1">
+                    引換場所: {selectedGoodsSpot.emoji} {selectedGoodsSpot.name}
+                  </p>
+                </div>
+            
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-left">
+                  <p className="text-xs font-extrabold text-amber-800 flex items-center gap-1">
+                    ⚠️ 店舗スタッフの方へ
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                    この画面を確認したら、Chura Freshをお客様にお渡しください。お渡しが完了しましたら、下の確認ボタンを押してください。
+                  </p>
+                </div>
+            
+                <button
+                  onClick={handleExchangeComplete}
+                  aria-label="引き換えを完了して観光スポット一覧へ進む"
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold shadow-lg hover:from-emerald-600 hover:to-teal-700 active:scale-95 transition-all flex items-center justify-center gap-2"
+                >
+                  ✨ スタッフ確認・引き換え完了
+                </button>
+                
+                <p className="text-[10px] text-gray-400">
+                  ※ボタンを押すと、名護市内のおすすめ観光スポット案内へ進みます。
+                </p>
+              </div>
+            )}
+            
             {/* C. 完了：スポット一覧 */}
             {status === 'completed' && !showSpotDetail && !isSpotNavigating && !isTripActive && (
               <div key="completed-list" className="animate-panel-enter">
@@ -1220,7 +1268,6 @@ export default function HomePage() {
                   次はどこへ寄りますか？
                 </h2>
 
-                {/* 周遊コース選択中サマリー */}
                 {tripSpots.length > 0 && (
                   <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-2xl space-y-2">
                     <div className="flex items-center justify-between">
@@ -1463,7 +1510,7 @@ export default function HomePage() {
 
                 <div className="w-full h-40 bg-gradient-to-br from-blue-100 to-indigo-200 rounded-2xl mb-4 overflow-hidden flex items-center justify-center">
                   {selectedSpot.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- external URLs; next/image needs remotePatterns config
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={selectedSpot.imageUrl}
                       alt={selectedSpot.name}
@@ -1582,10 +1629,73 @@ export default function HomePage() {
                 </button>
               </div>
             )}
-          </div>
-        </>
+          </div> {/* ← 📜 可変スクロールエリアの終了 */}
+        </div>
       )}
 
+      {/* ── Chura Fresh モーダル ────────────────────────────────── */}
+      {showChuraFreshInfo && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
+          {/* 背景の半透明オーバーレイ（タップで閉じる） */}
+          <div 
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" 
+            onClick={() => setShowChuraFreshInfo(false)} 
+          />
+          
+          {/* モーダル本体 */}
+          <div className="relative w-full max-w-sm bg-white rounded-[28px] overflow-hidden shadow-2xl animate-panel-enter flex flex-col max-h-[85vh]">
+            
+            {/* 写真エリア */}
+            <div className="w-full h-48 bg-blue-50 relative shrink-0 flex items-center justify-center">
+              <img 
+                src={churaFreshImg.src}
+                alt="Chura Fresh" 
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  // 画像がない場合のフォールバック表示
+                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                  e.currentTarget.parentElement!.innerHTML = '<span class="text-6xl">🎁</span><button id="close-btn" class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-black/30 text-white z-10">✕</button>';
+                  document.getElementById('close-btn')?.addEventListener('click', () => setShowChuraFreshInfo(false));
+                }}
+              />
+              <button
+                onClick={() => setShowChuraFreshInfo(false)}
+                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors z-10"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* 説明コンテンツエリア */}
+            <div className="p-6 overflow-y-auto">
+              <h3 className="text-xl font-extrabold text-gray-800 mb-2 flex items-center gap-2">
+                Chura Fresh
+              </h3>
+              <p className="text-sm text-gray-600 leading-relaxed mb-5">
+                オリオンビールの麦芽粕を再利用して作られた、オリジナルグッズです。
+                好きな香りを吹きかけて、あなただけの名護の思い出を提供します。
+              </p>
+
+              <div className="bg-blue-50 rounded-2xl p-4 border border-blue-100 mb-6">
+                <h4 className="text-sm font-bold text-blue-800 mb-2">✨ 楽しみ方</h4>
+                <ol className="text-xs text-blue-700 space-y-2 pl-4 list-decimal marker:font-bold">
+                  <li>名護市営駐車場へ車を停める</li>
+                  <li>引き換え店舗へ訪れ、Chura Freshをゲット！</li>
+                  <li>おすすめスポットを巡って名護を満喫</li>
+                </ol>
+              </div>
+
+              <button
+                onClick={() => setShowChuraFreshInfo(false)}
+                className="w-full py-4 rounded-2xl bg-blue-600 text-white font-bold shadow-lg hover:bg-blue-700 active:scale-95 transition-all"
+              >
+                閉じる
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* ── 位置情報エラーオーバーレイ ────────────────────────────────── */}
       {geoError && (
         <div className="absolute inset-0 z-50 flex items-end justify-center">
