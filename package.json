@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "import:spots": "node scripts/import-spots.mjs",
+    "fix:spot-coordinates": "node scripts/fix-spot-coordinates.mjs",
+    "check:hours": "node scripts/check-hours.mjs",
+    "check:spots": "node scripts/check-spots.mjs"
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^2.0.2",

@@ -1,0 +1,14 @@
+[
+  {
+    "no": 63,
+    "name": "ラックス",
+    "rank": null,
+    "googleMapsUrl": null,
+    "resolvedUrl": null,
+    "coordinateSource": "unresolved_no_coordinate",
+    "candidateLat": null,
+    "candidateLng": null,
+    "verificationGoogleMapsUrl": null,
+    "reason": "ExcelのURL列が空のため座標を取得できなかった"
+  }
+]

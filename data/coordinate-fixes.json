@@ -1,0 +1,38 @@
+[
+  {
+    "name": "なかむら製菓",
+    "oldLat": 26.5896,
+    "oldLng": 127.9837,
+    "newLat": 26.5893683,
+    "newLng": 127.98393180000001,
+    "coordinateSource": "google_places_location",
+    "placeId": "ChIJEwlYrY5V5DQRmP5YlQiL7ys",
+    "formattedAddress": "日本、〒905-0013 沖縄県名護市城１丁目４−１１",
+    "googleMapsUrl": "https://maps.google.com/?cid=3165901932046384792&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+    "checkUrl": "https://www.google.com/maps/search/?api=1&query=26.5893683,127.98393180000001"
+  },
+  {
+    "name": "宮城菓子店",
+    "oldLat": 26.5896,
+    "oldLng": 127.9828,
+    "newLat": 26.589496399999998,
+    "newLng": 127.9841002,
+    "coordinateSource": "google_places_location",
+    "placeId": "ChIJEwlYrY5V5DQRoBPVnJc6bsw",
+    "formattedAddress": "日本、〒905-0013 沖縄県名護市城１丁目４−１１",
+    "googleMapsUrl": "https://maps.google.com/?cid=14730775854021153696&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+    "checkUrl": "https://www.google.com/maps/search/?api=1&query=26.589496399999998,127.9841002"
+  },
+  {
+    "name": "HEY BURGER",
+    "oldLat": 26.5895,
+    "oldLng": 127.9844,
+    "newLat": 26.5906885,
+    "newLng": 127.98277390000001,
+    "coordinateSource": "google_places_location",
+    "placeId": "ChIJbWzuLfJV5DQRu6oZ9xAiF5M",
+    "formattedAddress": "日本、〒905-0013 沖縄県名護市城１丁目２−３ 2F",
+    "googleMapsUrl": "https://maps.google.com/?cid=10598977704300227259&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+    "checkUrl": "https://www.google.com/maps/search/?api=1&query=26.5906885,127.98277390000001"
+  }
+]

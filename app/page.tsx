@@ -182,7 +182,7 @@ type LogEvent = 'LAUNCH' | 'GOODS_RECEIVED' | 'SKIP_GOODS' | 'SPOT_SELECT' | 'AP
 
 async function logEvent(event: LogEvent, userId:string,payload?: Record<string, unknown>) {
   if (!GAS_URL) return;
-  let type = "post_user";
+  const type = "post_user";
   try {
     await fetch(GAS_URL, {
       method: 'POST',
@@ -349,7 +349,7 @@ export default function HomePage() {
       uid = "usr_" + Math.random().toString(36).substring(2, 11);
       localStorage.setItem("nago_tour_uid", uid);
     }
-    setUserID(uid);
+    queueMicrotask(() => setUserID(uid));
     logEvent('LAUNCH',uid);
   }, []);
 

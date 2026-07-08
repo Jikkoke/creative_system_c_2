@@ -1,0 +1,641 @@
+[
+  {
+    "no": 3,
+    "name": "noel",
+    "googleMapsUrl": "https://maps.app.goo.gl/TCXew61YCG9WoFBJ9",
+    "resolvedUrl": "https://www.google.com/maps/place/No%C3%ABl(%E3%83%8E%E3%82%A8%E3%83%AB)/@26.602926,127.9764422,17z/data=!3m1!4b1!4m6!3m5!1s0x34e4552a06bec877:0xa6740c6a18065e2a!8m2!3d26.602926!4d127.9790171!16s%2Fg%2F11lcfsx95f?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=3ba8d093-a972-4ec7-aa0f-6ed4b62a307f",
+    "distanceFromHitohakoMeters": 1528,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.602926,127.9790171",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 4,
+    "name": "ネオパーク",
+    "googleMapsUrl": "https://maps.app.goo.gl/Qo9FcB75kPU3fgaT7",
+    "resolvedUrl": "https://www.google.com/maps/place/%E3%83%8D%E3%82%AA%E3%83%91%E3%83%BC%E3%82%AF%E3%82%AA%E3%82%AD%E3%83%8A%E3%83%AF/@26.6106621,127.9889447,17z/data=!3m2!4b1!5s0x34e455e28d6a360f:0xc77b30e81b808688!4m6!3m5!1s0x34e455e39564c0a3:0x98df0b723898756b!8m2!3d26.6106621!4d127.9915196!16s%2Fg%2F121p7ctp?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=67c7979e-a31d-44f7-a131-db793b5dbb55",
+    "distanceFromHitohakoMeters": 2410,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6106621,127.9915196",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 9,
+    "name": "おおしろそば",
+    "googleMapsUrl": "https://maps.app.goo.gl/dsgJEpLqHxYw6Avq7",
+    "resolvedUrl": "https://www.google.com/maps/place/%E3%81%8A%E3%81%8A%E3%81%97%E3%82%8D%E3%81%9D%E3%81%B0/@26.6067259,127.9892443,16z/data=!4m6!3m5!1s0x34e4551f69bca369:0x53a6e97ed96d74dc!8m2!3d26.6067273!4d127.9932425!16s%2Fg%2F11j_5xkf0j?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=e3887a54-ab9c-4466-a78b-0c6a2eccb620",
+    "distanceFromHitohakoMeters": 2066,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6067273,127.9932425",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 15,
+    "name": "麺やKEIJIRO 名護店",
+    "googleMapsUrl": "https://maps.app.goo.gl/AawsgaePzbmXfVaa7",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E9%BA%BA%E3%82%84KEIJIRO+%E5%90%8D%E8%AD%B7%E5%BA%97/@26.5938966,127.9733805,19.42z/data=!4m6!3m5!1s0x34e4ff6590d54b61:0x747c86db2fb49bd0!8m2!3d26.5938272!4d127.9737986!16s%2Fg%2F11fnb28r6r?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=41ef005b-3d72-4590-8acd-413a6ad5fa2e",
+    "distanceFromHitohakoMeters": 1120,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5938272,127.9737986",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 16,
+    "name": "宮里そば",
+    "googleMapsUrl": "https://maps.app.goo.gl/TqBSaKAQR2wtb18n8",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E5%AE%AE%E9%87%8C%E3%81%9D%E3%81%B0/@26.5940978,127.9704566,19.42z/data=!4m6!3m5!1s0x34e4ff642daddc93:0xb2663b656aad165f!8m2!3d26.5939777!4d127.9707144!16s%2Fg%2F1tsr0yyr?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=dc456ef7-8e1f-4ed7-a6f8-04948b4daefa",
+    "distanceFromHitohakoMeters": 1413,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5939777,127.9707144",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 17,
+    "name": "幸ちゃんそば",
+    "googleMapsUrl": "https://maps.app.goo.gl/gesThmynr4pKb65f9",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E5%B9%B8%E3%81%A1%E3%82%83%E3%82%93%E3%81%9D%E3%81%B0/@26.5941725,127.9738121,18.75z/data=!4m6!3m5!1s0x34e4ff61694fd28f:0xb67692283dc2eb6a!8m2!3d26.5940744!4d127.9747731!16s%2Fg%2F11bwh8ctp5?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=e729289c-c580-4c29-8e5b-3de24ccce217",
+    "distanceFromHitohakoMeters": 1042,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5940744,127.9747731",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 18,
+    "name": "プチレストラン エメラルド",
+    "googleMapsUrl": "https://maps.app.goo.gl/9pytd5669i75MKtX7",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E3%83%97%E3%83%81%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3+%E3%82%A8%E3%83%A1%E3%83%A9%E3%83%AB%E3%83%89/@26.5943527,127.9666409,17z/data=!4m7!3m6!1s0x34e4ff65efa97d01:0x170cfb66ef0809e4!8m2!3d26.5943289!4d127.9687396!15sCg_jgqjjg6Hjg6njg6vjg4laESIP44Ko44Oh44Op44Or44OJkgESaXRhbGlhbl9yZXN0YXVyYW50mgEkQ2hkRFNVaE5NRzluUzBWSlEwRm5TVVJJTTNaUVZIVkJSUkFC4AEA-gEFCKEBEB4!16s%2Fg%2F1tdr5y8v?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=626f14bb-bb7f-417e-b2ef-532cc895016b",
+    "distanceFromHitohakoMeters": 1612,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5943289,127.9687396",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 19,
+    "name": "ゆきの",
+    "googleMapsUrl": "https://maps.app.goo.gl/89CSFEWLft8WMzVm8",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E3%82%86%E3%81%8D%E3%81%AE/@26.5934378,127.9651731,19z/data=!4m6!3m5!1s0x34e4ff6eff673163:0x9fd372cc3f11d0ab!8m2!3d26.5938492!4d127.9650345!16s%2Fg%2F1tg6mwx2?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=94c1898b-9717-4192-8220-7f387e38553d",
+    "distanceFromHitohakoMeters": 1954,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5938492,127.9650345",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 20,
+    "name": "パティスリー ブール・ムー",
+    "googleMapsUrl": "https://maps.app.goo.gl/D2jWJqGeymZVMpvcA",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E3%83%91%E3%83%86%E3%82%A3%E3%82%B9%E3%83%AA%E3%83%BC+%E3%83%96%E3%83%BC%E3%83%AB%E3%83%BB%E3%83%A0%E3%83%BC/@26.5998024,127.9669084,19.53z/data=!4m6!3m5!1s0x34e4ff00174b3159:0x877afc3fe4c5231!8m2!3d26.5999326!4d127.9669077!16s%2Fg%2F11wwbfc595?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=bd38f442-f77d-439f-a0dc-13e73136ce1c",
+    "distanceFromHitohakoMeters": 2045,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5999326,127.9669077",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 21,
+    "name": "我流酒場まっかず 宮里店",
+    "googleMapsUrl": "https://maps.app.goo.gl/ZFKCuPSLSZv59nK48",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E6%88%91%E6%B5%81%E9%85%92%E5%A0%B4%E3%81%BE%E3%81%A3%E3%81%8B%E3%81%9A+%E5%AE%AE%E9%87%8C%E5%BA%97/@26.6010983,127.9689836,19.53z/data=!4m6!3m5!1s0x34e4ffb6df5d8329:0x3163218425e5abe3!8m2!3d26.6008949!4d127.9691543!16s%2Fg%2F11j0p1wv1n?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=7ba64f5b-ba8d-477f-a2e1-3061b71d85fd",
+    "distanceFromHitohakoMeters": 1926,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6008949,127.9691543",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 22,
+    "name": "居酒屋 おれん家",
+    "googleMapsUrl": "https://maps.app.goo.gl/75QkV31GxgxkSzG47",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E5%B1%85%E9%85%92%E5%B1%8B+%E3%81%8A%E3%82%8C%E3%82%93%E5%AE%B6/@26.6030596,127.9754484,19.1z/data=!4m6!3m5!1s0x34e4ff3da5de2945:0x88a2fbd1acdc4f99!8m2!3d26.6027993!4d127.9758287!16s%2Fg%2F11k9n5mm47?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=ae5adca3-3d9f-4946-a445-5be91b880ac9",
+    "distanceFromHitohakoMeters": 1650,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6027993,127.9758287",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 23,
+    "name": "島唄居酒屋結い唄",
+    "googleMapsUrl": "https://maps.app.goo.gl/rUHqrsXHRQPeNdpa7",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E5%B3%B6%E5%94%84%E5%B1%85%E9%85%92%E5%B1%8B%E7%B5%90%E3%81%84%E5%94%84/@26.6030819,127.9751466,19.1z/data=!4m6!3m5!1s0x34e455f83f7e3e85:0xb7437f14aad2b4e7!8m2!3d26.6028894!4d127.9754802!16s%2Fg%2F11c1qzd382?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=7ee98c83-c91d-46ce-a2f0-80e9b6110bff",
+    "distanceFromHitohakoMeters": 1676,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6028894,127.9754802",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 24,
+    "name": "三國",
+    "googleMapsUrl": "https://maps.app.goo.gl/u7B1B8J5Sdf9FjQ36",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E4%B8%89%E5%9C%8B/@26.6033424,127.9751193,19.37z/data=!4m6!3m5!1s0x34e4ff25b65ba881:0x1b97ac00616ecaf7!8m2!3d26.6034404!4d127.9752024!16s%2Fg%2F11j4mm3m4d?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=4bf5efea-0dca-4110-be80-f8991f267292",
+    "distanceFromHitohakoMeters": 1743,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6034404,127.9752024",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 25,
+    "name": "ジミーなご店",
+    "googleMapsUrl": "https://maps.app.goo.gl/1zFkR1rqRucFL1SF7",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E3%82%B8%E3%83%9F%E3%83%BC%E3%81%AA%E3%81%94%E5%BA%97/@26.606935,127.979193,20.21z/data=!4m6!3m5!1s0x34e455f8191e7dcd:0x8b5290c6548f92a8!8m2!3d26.6071438!4d127.9791496!16s%2Fg%2F1txflx9r?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=6c40b152-4b8b-4b3c-a7dd-9c949c9e2193",
+    "distanceFromHitohakoMeters": 1972,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6071438,127.9791496",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 26,
+    "name": "ライノナン&カレーハウス名護店/Rhino Naan and Curry House",
+    "googleMapsUrl": "https://maps.app.goo.gl/1R4doZqg8bdmS2oZ8",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E3%83%A9%E3%82%A4%E3%83%8E%E3%83%8A%E3%83%B3%26%E3%82%AB%E3%83%AC%E3%83%BC%E3%83%8F%E3%82%A6%E3%82%B9%E5%90%8D%E8%AD%B7%E5%BA%97%2FRhino+Naan+and+Curry+House/@26.6061014,127.9807923,20.39z/data=!3m1!5s0x34e455f78027d9a7:0x4797580b6770bf05!4m6!3m5!1s0x34e455cd16363c65:0xa020b7712f8615c!8m2!3d26.6061305!4d127.9810994!16s%2Fg%2F11xlm721r7?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=080b6f58-76fb-4648-b5e7-ce17f06ea812",
+    "distanceFromHitohakoMeters": 1821,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6061305,127.9810994",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 27,
+    "name": "まんぷく",
+    "googleMapsUrl": "https://maps.app.goo.gl/LTmjPJKyJjL9CZLm7",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E3%81%BE%E3%82%93%E3%81%B7%E3%81%8F/@26.608699,127.9784685,20.09z/data=!4m6!3m5!1s0x34e45537071e7049:0xfc31d77fb16d041a!8m2!3d26.608711!4d127.9785592!16s%2Fg%2F11hzhc00r0?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=23603a96-2c8e-40cb-a776-8171b6274f9d",
+    "distanceFromHitohakoMeters": 2156,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.608711,127.9785592",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 28,
+    "name": "和風亭 為又店",
+    "googleMapsUrl": "https://maps.app.goo.gl/T5QV62eKNTjb2vSw7",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E5%92%8C%E9%A2%A8%E4%BA%AD+%E7%82%BA%E5%8F%88%E5%BA%97/@26.6083874,127.9798143,16z/data=!3m2!4b1!5s0x34e455f9a037fdb5:0xbfd8403d2638448d!4m6!3m5!1s0x34e455f99f615555:0x3e9930d424803990!8m2!3d26.6083874!4d127.9823892!16s%2Fg%2F1tcxgjfp?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=d4bc1061-660e-4485-9356-e7c15fb8364b",
+    "distanceFromHitohakoMeters": 2053,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6083874,127.9823892",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 29,
+    "name": "焼肉こうちゃん",
+    "googleMapsUrl": "https://maps.app.goo.gl/jPSSTxTjQfoVhtDj6",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E7%84%BC%E8%82%89%E3%81%93%E3%81%86%E3%81%A1%E3%82%83%E3%82%93/@26.615743,127.9688967,17.91z/data=!3m1!5s0x34e455f9a037fdb5:0xbfd8403d2638448d!4m6!3m5!1s0x34e4ff51f59edb5d:0x56be222b49b16392!8m2!3d26.61493!4d127.969018!16s%2Fg%2F12mkzk5fh?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=6dbd62c3-ef96-4e58-b693-8d70bb5be4be",
+    "distanceFromHitohakoMeters": 3157,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.61493,127.969018",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 30,
+    "name": "豚骨ラーメンまる安",
+    "googleMapsUrl": "https://maps.app.goo.gl/ipUZ3UiWw4c5HSF6A",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E8%B1%9A%E9%AA%A8%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E3%81%BE%E3%82%8B%C2%B7%E5%AE%89+%E5%90%8D%E8%AD%B7%E5%BA%97/@26.615743,127.9688967,17.91z/data=!3m1!5s0x34e455f9a037fdb5:0xbfd8403d2638448d!4m6!3m5!1s0x34e4ff00439c249d:0x23d7df54435911cd!8m2!3d26.6158249!4d127.9690205!16s%2Fg%2F11vx1jmc95?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=4aab2351-4f1b-445d-a0e5-bb56775c3bea",
+    "distanceFromHitohakoMeters": 3245,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6158249,127.9690205",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 31,
+    "name": "フレンチソーキ専門店 Crab Noodle 3.0 名護店",
+    "googleMapsUrl": "https://maps.app.goo.gl/NPfR5ZviCiU8tv8t5",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E3%83%95%E3%83%AC%E3%83%B3%E3%83%81%E3%82%BD%E3%83%BC%E3%82%AD%E5%B0%82%E9%96%80%E5%BA%97+Crab+Noodle+3.0+%E5%90%8D%E8%AD%B7%E5%BA%97/@26.6175229,127.968853,19.36z/data=!3m1!5s0x34e455f9a037fdb5:0xbfd8403d2638448d!4m6!3m5!1s0x34e4f95087c96d61:0xcfcf446be082db62!8m2!3d26.6174298!4d127.9691982!16s%2Fg%2F11xt__j3sv?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=ebc830d2-d757-45cb-adc3-4a25e18fb9ed",
+    "distanceFromHitohakoMeters": 3396,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6174298,127.9691982",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 32,
+    "name": "BRISKSTAND NAGO【ブリスクスタンド名護】",
+    "googleMapsUrl": "https://maps.app.goo.gl/7mpMzwfptgkT1eH88",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/BRISKSTAND+NAGO%E3%80%90%E3%83%96%E3%83%AA%E3%82%B9%E3%82%AF%E3%82%B9%E3%82%BF%E3%83%B3%E3%83%89%E5%90%8D%E8%AD%B7%E3%80%91/@26.6178173,127.9687373,19.72z/data=!3m1!5s0x34e455f9a037fdb5:0xbfd8403d2638448d!4m6!3m5!1s0x34e4ff0f3d4e547b:0xd8f460bfdc800880!8m2!3d26.6180053!4d127.9690239!16s%2Fg%2F11yp_rcgw2?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=a9661fa9-0020-45f8-b42d-aa6bbf486bc1",
+    "distanceFromHitohakoMeters": 3461,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6180053,127.9690239",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 33,
+    "name": "GreenCafe",
+    "googleMapsUrl": "https://maps.app.goo.gl/NH52UZ1U2wfbXQkX9",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%EF%BC%A7%EF%BD%92%EF%BD%85%EF%BD%85%EF%BD%8E%EF%BC%A3%EF%BD%81%EF%BD%86%EF%BD%85/@26.6177719,127.9666437,20.18z/data=!3m1!5s0x34e455f9a037fdb5:0xbfd8403d2638448d!4m6!3m5!1s0x34e4ff4d9cd55f27:0x41acab7f082e16c3!8m2!3d26.6179338!4d127.9671749!16s%2Fg%2F11cs4kr6x7?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=f986c753-6aa1-4ee4-9e6b-f7cc30a92e62",
+    "distanceFromHitohakoMeters": 3538,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6179338,127.9671749",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 34,
+    "name": "アクセサリーパーツ",
+    "googleMapsUrl": "https://maps.app.goo.gl/FPE5by4AhVwyTu9e7",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B5%E3%83%AA%E3%83%BC%E3%83%91%E3%83%BC%E3%83%84/@26.6179985,127.9672433,20.18z/data=!3m1!5s0x34e455f9a037fdb5:0xbfd8403d2638448d!4m6!3m5!1s0x34e4ffd11c951821:0xb47d3a56bf676bd2!8m2!3d26.6178523!4d127.967227!16s%2Fg%2F11y6p5vj1d?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=a4b36a9d-d5e3-4915-95a8-b13097af73fa",
+    "distanceFromHitohakoMeters": 3528,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6178523,127.967227",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 35,
+    "name": "本格あぐーとんこつらーめん- ICHI the RAMEN",
+    "googleMapsUrl": "https://maps.app.goo.gl/eLseCQczyHiM4q3V7",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/-%E6%9C%AC%E6%A0%BC%E3%81%82%E3%81%90%E3%83%BC%E3%81%A8%E3%82%93%E3%81%93%E3%81%A4%E3%82%89%E3%83%BC%E3%82%81%E3%82%93-+ICHI+the+RAMEN/@26.6180543,127.9687579,20.18z/data=!3m1!5s0x34e455f9a037fdb5:0xbfd8403d2638448d!4m6!3m5!1s0x34e4ff96d6ae7851:0x40c706df266f3882!8m2!3d26.6180914!4d127.9687275!16s%2Fg%2F11y38hzfq7?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=808571eb-4e9c-46ef-9072-f391ad406b9a",
+    "distanceFromHitohakoMeters": 3483,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6180914,127.9687275",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 36,
+    "name": "せいろ蒸しカフェあきはる",
+    "googleMapsUrl": "https://maps.app.goo.gl/f239CfYUcdaqwHND6",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E3%81%9B%E3%81%84%E3%82%8D%E8%92%B8%E3%81%97%E3%82%AB%E3%83%95%E3%82%A7%E3%81%82%E3%81%8D%E3%81%AF%E3%82%8B/@26.6222771,127.9657739,19.97z/data=!3m1!5s0x34e455f9a037fdb5:0xbfd8403d2638448d!4m6!3m5!1s0x34e4f93620822dcd:0x6f4c41d9fe74e69f!8m2!3d26.6221714!4d127.9657632!16s%2Fg%2F11xlkt96tp?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=113c31af-7b20-4f8e-b2d9-20f852b32415",
+    "distanceFromHitohakoMeters": 4021,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6221714,127.9657632",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 37,
+    "name": "グラスアート藍",
+    "googleMapsUrl": "https://maps.app.goo.gl/iT5cBRjUMAjHLvzy9",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E3%82%B0%E3%83%A9%E3%82%B9%E3%82%A2%E3%83%BC%E3%83%88%E8%97%8D/@26.625236,127.9661558,19.97z/data=!3m1!5s0x34e455f9a037fdb5:0xbfd8403d2638448d!4m6!3m5!1s0x34e4f8b24fc14bf3:0x2b8e724b48e063c2!8m2!3d26.6249406!4d127.9662353!16s%2Fg%2F1tfz7yg7?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=6f14bbfa-9499-4957-98dc-57066d463d02",
+    "distanceFromHitohakoMeters": 4277,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6249406,127.9662353",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 38,
+    "name": "むかしむかし",
+    "googleMapsUrl": "https://maps.app.goo.gl/PjpsNpfuXKf5uR5V7",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E3%82%80%E3%81%8B%E3%81%97%E3%82%80%E3%81%8B%E3%81%97/@26.6259435,127.9659,19.97z/data=!3m1!5s0x34e455f9a037fdb5:0xbfd8403d2638448d!4m6!3m5!1s0x34e4f8b223f8c1a7:0x8e90ae804c9a0e52!8m2!3d26.6256801!4d127.9662394!16s%2Fg%2F1tk_m0hf?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=b13059a2-1b64-4cfc-b54d-2c65f6c8b81a",
+    "distanceFromHitohakoMeters": 4352,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6256801,127.9662394",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 39,
+    "name": "Cafe&雑貨 Southerly",
+    "googleMapsUrl": "https://maps.app.goo.gl/NYYDPtyKJresmG5q6",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/Cafe%26%E9%9B%91%E8%B2%A8+Southerly/@26.6316524,127.9654222,21z/data=!4m6!3m5!1s0x34e4f8ba846cddc5:0x2274ec661cb0d87f!8m2!3d26.6316722!4d127.9655528!16s%2Fg%2F11cssyvx93?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=b4a1449c-0c0e-4e51-a0e5-4c66f2601856",
+    "distanceFromHitohakoMeters": 4992,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6316722,127.9655528",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 40,
+    "name": "CoCoらぁいす",
+    "googleMapsUrl": "https://maps.app.goo.gl/UoNzrXSxkDad99abA",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/CoCo%E3%82%89%E3%81%81%E3%81%84%E3%81%99/@26.6352809,127.9611607,19z/data=!4m6!3m5!1s0x34e4f900570e54e3:0xea19277dce449c58!8m2!3d26.6351931!4d127.9618023!16s%2Fg%2F11y4qt95w1?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=1d9fe9f7-498f-42a3-805c-1cf5be99a517",
+    "distanceFromHitohakoMeters": 5497,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6351931,127.9618023",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 41,
+    "name": "御菓子御殿 名護店(DINO恐竜PARKやんばる亜熱帯の森)",
+    "googleMapsUrl": "https://maps.app.goo.gl/vAXzjCg56ytcYfNT9",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E5%BE%A1%E8%8F%93%E5%AD%90%E5%BE%A1%E6%AE%BF+%E5%90%8D%E8%AD%B7%E5%BA%97%EF%BC%88DINO%E6%81%90%E7%AB%9CPARK%E3%82%84%E3%82%93%E3%81%B0%E3%82%8B%E4%BA%9C%E7%86%B1%E5%B8%AF%E3%81%AE%E6%A3%AE%EF%BC%89/@26.6371594,127.9565371,17z/data=!4m6!3m5!1s0x34e4f8b8d8f56405:0xc52e14e8aaaf4fbf!8m2!3d26.637159!4d127.95983!16s%2Fg%2F1tfmfkfj?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=733d2fc3-47ee-4edd-9c3d-25285fdb047a",
+    "distanceFromHitohakoMeters": 5777,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.637159,127.95983",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 42,
+    "name": "ヤンバルンチャー 名護店",
+    "googleMapsUrl": "https://maps.app.goo.gl/5hrJwoxmiC24wEMv8",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E3%83%A4%E3%83%B3%E3%83%90%E3%83%AB%E3%83%B3%E3%83%81%E3%83%A3%E3%83%BC+%E5%90%8D%E8%AD%B7%E5%BA%97/@26.6394278,127.9550883,17.46z/data=!4m6!3m5!1s0x34e4510032685649:0x19fa33f39af3b923!8m2!3d26.6393084!4d127.9583011!16s%2Fg%2F11n5typ_d1?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=10bcfa78-43f4-4924-953c-d80df29aeb64",
+    "distanceFromHitohakoMeters": 6058,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6393084,127.9583011",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 43,
+    "name": "海喜食堂(海鮮料理みき食堂)",
+    "googleMapsUrl": "https://maps.app.goo.gl/UmR2MSeBDyaYqguF8",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E6%B5%B7%E5%96%9C%E9%A3%9F%E5%A0%82(%E6%B5%B7%E9%AE%AE%E6%96%99%E7%90%86%E3%81%BF%E3%81%8D%E9%A3%9F%E5%A0%82)/@26.6392158,127.957586,20z/data=!4m6!3m5!1s0x34e4f9924ed70dff:0x78e43575d62f0eaa!8m2!3d26.6392158!4d127.9581338!16s%2Fg%2F11xhbhs61y?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=00d7f4b5-af87-4a6f-9286-3ae6b69f89be",
+    "distanceFromHitohakoMeters": 6056,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6392158,127.9581338",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 44,
+    "name": "そば屋 よしこ",
+    "googleMapsUrl": "https://maps.app.goo.gl/8qtYHRicLzXjfRYi6",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E3%81%9D%E3%81%B0%E5%B1%8B+%E3%82%88%E3%81%97%E3%81%93/@26.639639,127.957873,20z/data=!4m6!3m5!1s0x34e4f8bf3f31990d:0x9c517aff3b838b00!8m2!3d26.6395972!4d127.958427!16s%2Fg%2F1tfb_s7b?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=ca547056-5c45-4dde-ae85-e8ab90ebfe38",
+    "distanceFromHitohakoMeters": 6082,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6395972,127.958427",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 45,
+    "name": "祖堅商店",
+    "googleMapsUrl": "https://maps.app.goo.gl/d3Xvx9DBYHacR66j7",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E7%A5%96%E5%A0%85%E5%95%86%E5%BA%97/@26.6427485,127.9583636,20z/data=!4m6!3m5!1s0x34e4f8bfddc3ffff:0xbec6e5a683c554fe!8m2!3d26.6429342!4d127.9586982!16s%2Fg%2F11f4r2ff2z?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=a897d8ca-b409-471e-a8c7-11bf1997684b",
+    "distanceFromHitohakoMeters": 6410,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6429342,127.9586982",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 46,
+    "name": "北の鮮魚便北海丼 本部店 hokkaidonmotobu",
+    "googleMapsUrl": "https://maps.app.goo.gl/MwEbaDDsMV8g8cLF9",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E5%8C%97%E3%81%AE%E9%AE%AE%E9%AD%9A%E4%BE%BF%E5%8C%97%E6%B5%B7%E4%B8%BC+%E6%9C%AC%E9%83%A8%E5%BA%97+hokkaidonmotobu/@26.644313,127.9572613,20.31z/data=!4m6!3m5!1s0x34e4f90075c644c3:0xdcdbf45d92ed5b5e!8m2!3d26.6443418!4d127.9575162!16s%2Fg%2F11x1_ccr9z?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=8609e7ba-a637-434a-b5a5-5614171f528d",
+    "distanceFromHitohakoMeters": 6600,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6443418,127.9575162",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 47,
+    "name": "いこいの駅いずみ",
+    "googleMapsUrl": "https://maps.app.goo.gl/JxQDMN8hN2yB3Lpz5",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E3%81%84%E3%81%93%E3%81%84%E3%81%AE%E9%A7%85%E3%81%84%E3%81%9A%E3%81%BF/@26.6444327,127.9569208,20z/data=!4m6!3m5!1s0x34e4f8954d0db2b1:0x5006d76e1d94569!8m2!3d26.6444328!4d127.9574019!16s%2Fg%2F12qg5q8qt?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=2acc45ba-eba2-43c9-8949-9aeb8b11ff78",
+    "distanceFromHitohakoMeters": 6614,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6444328,127.9574019",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 48,
+    "name": "山原そば",
+    "googleMapsUrl": "https://maps.app.goo.gl/KczoLfZR24T1c1G4A",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E5%B1%B1%E5%8E%9F%E3%81%9D%E3%81%B0/@26.6506176,127.949199,20.34z/data=!4m6!3m5!1s0x34e4f8e927cd8e73:0x3355540c7e6d6c31!8m2!3d26.650532!4d127.9494745!16s%2Fg%2F1wk7nmjc?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=6d4c46a7-ef5a-461c-bd43-bb9ff61906aa",
+    "distanceFromHitohakoMeters": 7565,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.650532,127.9494745",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 49,
+    "name": "杜鵑草",
+    "googleMapsUrl": "https://maps.app.goo.gl/2XgwGgEoeeyPJFvC8",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E6%9D%9C%E9%B5%91%E8%8D%89/@26.6339915,127.9629165,18.53z/data=!4m6!3m5!1s0x34e4f8ba4b92509b:0xf4f003204806aeda!8m2!3d26.6340352!4d127.9641606!16s%2Fg%2F1hdz2njkl?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=f37d4564-4792-4ed1-a94b-ae35a1d80aef",
+    "distanceFromHitohakoMeters": 5287,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6340352,127.9641606",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 50,
+    "name": "ENTRO Cafe &Restaurant",
+    "googleMapsUrl": "https://maps.app.goo.gl/xThypMeiQoRG9BmQ9",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/ENTRO+Cafe+%26Restaurant/@26.6210044,127.9670283,16.9z/data=!4m6!3m5!1s0x34e4f8ad16655555:0x5713b55e3a54bf5c!8m2!3d26.6212481!4d127.9695516!16s%2Fg%2F11btn166my?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=91b1e157-f604-4c87-8319-79b72cd30693",
+    "distanceFromHitohakoMeters": 3768,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6212481,127.9695516",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 51,
+    "name": "ERIZO",
+    "googleMapsUrl": "https://maps.app.goo.gl/B3qi2f562G5AXrX96",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/ERIZO/@26.6180333,127.9671784,19z/data=!4m6!3m5!1s0x34e4ff2b61caac29:0x695114006b03f6e4!8m2!3d26.6180333!4d127.9682142!16s%2Fg%2F11x6zv1gp9?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=7eb04234-7d67-4985-81dd-58e6014c88e5",
+    "distanceFromHitohakoMeters": 3500,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6180333,127.9682142",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 52,
+    "name": "てぃーだ",
+    "googleMapsUrl": "https://maps.app.goo.gl/LGiWAhf8hzUJzVzF8",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E3%81%A6%E3%81%83%E3%83%BC%E3%81%A0/@26.6117721,127.9712719,19z/data=!4m6!3m5!1s0x34e455845552cb57:0x712fcfd8f8b5fa05!8m2!3d26.6117793!4d127.9724501!16s%2Fg%2F1wj_r08l?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=22c1334f-3919-4a76-b40e-c3ce7967a559",
+    "distanceFromHitohakoMeters": 2690,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6117793,127.9724501",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 53,
+    "name": "A&W 名桜店",
+    "googleMapsUrl": "https://maps.app.goo.gl/s7sAyG27Rfgkmc8g7",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/A%26W+%E5%90%8D%E6%A1%9C%E5%BA%97/@26.6078386,127.9686092,19z/data=!4m6!3m5!1s0x34e4ff5afc009a63:0x1edc33b61ec5c14!8m2!3d26.6078386!4d127.9698003!16s%2Fg%2F1tk4nxqw?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=a57db6d0-7d29-4ee3-aa9e-677767240109",
+    "distanceFromHitohakoMeters": 2447,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6078386,127.9698003",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 54,
+    "name": "soy me",
+    "googleMapsUrl": "https://maps.app.goo.gl/cMM5BM5868AJfyJA8",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/soy+me/@26.6068686,127.9699235,19z/data=!4m6!3m5!1s0x34e4ffc809ad3133:0x42162f18a904d053!8m2!3d26.6068683!4d127.9711145!16s%2Fg%2F11y_tv__5b?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=bcf86b5a-9c63-4603-ad5b-978ce13194fe",
+    "distanceFromHitohakoMeters": 2284,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6068683,127.9711145",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 55,
+    "name": "森のガラス館",
+    "googleMapsUrl": "https://maps.app.goo.gl/VaBzRjc77mzZPjyp6",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E6%A3%AE%E3%81%AE%E3%82%AC%E3%83%A9%E3%82%B9%E9%A4%A8/@26.6076707,127.9697391,18.62z/data=!3m1!5s0x34e4ff59418874d3:0xd89ce46b4a14c2f4!4m6!3m5!1s0x34e4ff5af63336c3:0xbf25cbeaed86a835!8m2!3d26.6075936!4d127.9708756!16s%2Fg%2F1td7l17n?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=ce5d02fa-abe7-4baa-8bac-b62cbc9d3360",
+    "distanceFromHitohakoMeters": 2364,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6075936,127.9708756",
+    "reason": "Google Maps URLが重複しているため採用対象外"
+  },
+  {
+    "no": 56,
+    "name": "Poke Boo",
+    "googleMapsUrl": "https://maps.app.goo.gl/VaBzRjc77mzZPjyp6",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E6%A3%AE%E3%81%AE%E3%82%AC%E3%83%A9%E3%82%B9%E9%A4%A8/@26.6076707,127.9697391,18.62z/data=!3m1!5s0x34e4ff59418874d3:0xd89ce46b4a14c2f4!4m6!3m5!1s0x34e4ff5af63336c3:0xbf25cbeaed86a835!8m2!3d26.6075936!4d127.9708756!16s%2Fg%2F1td7l17n?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=ce5d02fa-abe7-4baa-8bac-b62cbc9d3360",
+    "distanceFromHitohakoMeters": 2364,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6075936,127.9708756",
+    "reason": "Google Maps URLが重複しているため採用対象外"
+  },
+  {
+    "no": 58,
+    "name": "キャプテンカンガルータコライス",
+    "googleMapsUrl": "https://maps.app.goo.gl/7EiBaDSH7p32RzUE6",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E3%82%AD%E3%83%A3%E3%83%97%E3%83%86%E3%83%B3%E3%82%AB%E3%83%B3%E3%82%AC%E3%83%AB%E3%83%BC%E3%82%BF%E3%82%B3%E3%83%A9%E3%82%A4%E3%82%B9/@26.5953396,127.9568385,17.9z/data=!4m6!3m5!1s0x34e4ffe8c0ee014d:0x2b1a7bac90ea5ce9!8m2!3d26.5952597!4d127.9581667!16s%2Fg%2F11qpp1wtbb?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=e2b31942-b2ec-42f2-86b9-cc3fa37ab389",
+    "distanceFromHitohakoMeters": 2655,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5952597,127.9581667",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 60,
+    "name": "シーサイドカフェ ブルートリップ",
+    "googleMapsUrl": "https://maps.app.goo.gl/FcRj2ir8JRNfN6rXA",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E3%82%B7%E3%83%BC%E3%82%B5%E3%82%A4%E3%83%89%E3%82%AB%E3%83%95%E3%82%A7+%E3%83%96%E3%83%AB%E3%83%BC%E3%83%88%E3%83%AA%E3%83%83%E3%83%97/@26.5792725,127.9833573,17.9z/data=!4m6!3m5!1s0x34e455815f6f36bf:0xa6ba7c64522fb9ab!8m2!3d26.5793476!4d127.9836821!16s%2Fg%2F1tdvxnck?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=4322f0e5-231b-46c4-a57f-03e7e58e1d29",
+    "distanceFromHitohakoMeters": 1185,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5793476,127.9836821",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 61,
+    "name": "大昇(DAISHO)",
+    "googleMapsUrl": "https://maps.app.goo.gl/BLNySEEocA9TGaPr7",
+    "resolvedUrl": "https://www.google.co.jp/maps/place/%E5%A4%A7%E6%98%87%EF%BC%88DAISHO%EF%BC%89/@26.6040444,127.9818969,18.98z/data=!4m6!3m5!1s0x34e455f71e922699:0xc2b984ddd649f512!8m2!3d26.6036055!4d127.9821179!16s%2Fg%2F11bwnyhqn0?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=c613daef-e0fd-43fa-8a62-65625d7d908d",
+    "distanceFromHitohakoMeters": 1528,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6036055,127.9821179",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 62,
+    "name": "玉家jr",
+    "googleMapsUrl": "https://maps.app.goo.gl/5r2LAhS4WDMcBPUf9",
+    "resolvedUrl": "https://www.google.com/maps/place/%E7%8E%89%E5%AE%B6+Jr./@26.6022333,127.9603807,17z/data=!3m1!4b1!4m6!3m5!1s0x34e4ff4204058ca5:0xc4e92069b203aec7!8m2!3d26.6022333!4d127.9629556!16s%2Fg%2F1v3kf7gn?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=ea43c690-e8ec-40e2-9725-c8745319026e",
+    "distanceFromHitohakoMeters": 2514,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6022333,127.9629556",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 64,
+    "name": "パティスリー ボンシャンス",
+    "googleMapsUrl": "https://maps.app.goo.gl/uju55owCxcDrL9nj8",
+    "resolvedUrl": "https://www.google.com/maps/place/P%C3%A2tisserie+Bonne+Chance!/@26.5982759,127.9608453,17z/data=!3m1!4b1!4m6!3m5!1s0x34e4ff6968f9ddef:0x6baf564572e6eef2!8m2!3d26.5982759!4d127.9634202!16s%2Fg%2F1thq7mfp?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=bdc928b6-1f33-470f-b02a-06c875b10295",
+    "distanceFromHitohakoMeters": 2263,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5982759,127.9634202",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 67,
+    "name": "21世紀の森公園",
+    "googleMapsUrl": "https://maps.app.goo.gl/mnyNwua3Kg5Xtiiy5",
+    "resolvedUrl": "https://www.google.com/maps/place/21%E4%B8%96%E7%B4%80%E3%81%AE%E6%A3%AE%E5%85%AC%E5%9C%92/@26.5935633,127.9713182,17.17z/data=!4m6!3m5!1s0x34e4ff6364eddedd:0xb73db9b32862115c!8m2!3d26.5917756!4d127.9709752!16s%2Fg%2F119vv2c7s?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=27a8ee9b-44de-42d2-8f5c-449161259922",
+    "distanceFromHitohakoMeters": 1331,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5917756,127.9709752",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 70,
+    "name": "ステーキハウス88Jr.名護店",
+    "googleMapsUrl": "https://maps.app.goo.gl/XMYByCpJtdSB77eVA",
+    "resolvedUrl": "https://www.google.com/maps/place/%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AD%E3%83%8F%E3%82%A6%E3%82%B988Jr.%E5%90%8D%E8%AD%B7%E5%BA%97/@26.6015288,127.9686381,16.07z/data=!4m6!3m5!1s0x34e4ff51d8ae6ab5:0x2c7958e56d83222a!8m2!3d26.6013512!4d127.9660857!16s%2Fg%2F11yg1czhp1?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=b40b7a67-151b-4a6f-9d25-83ee73278a3d",
+    "distanceFromHitohakoMeters": 2201,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6013512,127.9660857",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 71,
+    "name": "名護曲",
+    "googleMapsUrl": "https://maps.app.goo.gl/Mokf3hjgJ9vaWDsP8",
+    "resolvedUrl": "https://www.google.com/maps/place/%E5%90%8D%E8%AD%B7%E6%9B%B2/@26.5733955,127.980336,17z/data=!3m1!4b1!4m6!3m5!1s0x34e4557f26861fd3:0xec1284db68402955!8m2!3d26.5733955!4d127.9829109!16s%2Fg%2F1tcwj9jw?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=65b90e47-d38a-405a-b739-fc79b843aeab",
+    "distanceFromHitohakoMeters": 1850,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5733955,127.9829109",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 74,
+    "name": "ブルーシール 名護店",
+    "googleMapsUrl": "https://maps.app.goo.gl/TgYJFPkhyhR5UxcU9",
+    "resolvedUrl": "https://www.google.com/maps/place/%E3%83%96%E3%83%AB%E3%83%BC%E3%82%B7%E3%83%BC%E3%83%AB+%E5%90%8D%E8%AD%B7/@26.57621,127.9814112,17z/data=!3m1!4b1!4m6!3m5!1s0x34e455821c158d83:0xd71732c262a1b8d3!8m2!3d26.57621!4d127.9839861!16s%2Fg%2F1v8hz57g?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=262c3bf3-9776-4b05-9209-3f5824f990d9",
+    "distanceFromHitohakoMeters": 1533,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.57621,127.9839861",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 76,
+    "name": "前田食堂",
+    "googleMapsUrl": "https://maps.app.goo.gl/WmTrUsn8m2zqKJfHA",
+    "resolvedUrl": "https://www.google.com/maps/place/%E5%89%8D%E7%94%B0%E9%A3%9F%E5%A0%82+%E5%90%8D%E8%AD%B7%E5%BA%97/@26.6006939,127.97356,17z/data=!3m1!4b1!4m6!3m5!1s0x34e4ff5f0488ca15:0xe18d35147a4bcb4!8m2!3d26.6006939!4d127.9761349!16s%2Fg%2F1vnng40q?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=88ff5ca2-61c7-40c1-8c1f-466c9b87ef90",
+    "distanceFromHitohakoMeters": 1435,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6006939,127.9761349",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 77,
+    "name": "島豚七輪焼 満味",
+    "googleMapsUrl": "https://maps.app.goo.gl/NskK2wrFRCQVnDf66",
+    "resolvedUrl": "https://www.google.com/maps/place/%E5%B3%B6%E8%B1%9A%E4%B8%83%E8%BC%AA%E7%84%BC+%E6%BA%80%E5%91%B3/@26.6138042,127.9977243,14.87z/data=!4m6!3m5!1s0x34e5699dfe7ae9cf:0xd57feb1b3adcecf6!8m2!3d26.6055396!4d128.0009559!16s%2Fg%2F1tmqczfl?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=8366d800-8da8-496e-b694-8e2273d9d758",
+    "distanceFromHitohakoMeters": 2400,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6055396,128.0009559",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 78,
+    "name": "名護城公園",
+    "googleMapsUrl": "https://maps.app.goo.gl/Lhija6nQwgpCy6fm8",
+    "resolvedUrl": "https://www.google.com/maps/place/%E5%90%8D%E8%AD%B7%E5%9F%8E%E5%85%AC%E5%9C%92/@26.5926181,127.9876833,14.87z/data=!4m6!3m5!1s0x34e455952a5136eb:0x39ec56e7ef0b2bed!8m2!3d26.589226!4d127.9942991!16s%2Fg%2F1pv0mw68?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=f5842468-3472-4aa0-8090-cff2118f8d78",
+    "distanceFromHitohakoMeters": 1007,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.589226,127.9942991",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 79,
+    "name": "名護城公園 展望台",
+    "googleMapsUrl": "https://maps.app.goo.gl/4qWdZksyQoYK93rE6",
+    "resolvedUrl": "https://www.google.com/maps/place/%E5%90%8D%E8%AD%B7%E5%9F%8E%E5%85%AC%E5%9C%92+%E5%A4%A9%E4%B8%8A%E5%B1%95%E6%9C%9B%E5%8F%B0/@26.5918174,127.9899022,15.47z/data=!4m6!3m5!1s0x34e45595546ddb0b:0x3beaaa1fdd28853!8m2!3d26.5903039!4d127.9993574!16s%2Fg%2F11c5252m5n?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=c5aa6951-2e5f-488e-8a55-40075733e604",
+    "distanceFromHitohakoMeters": 1506,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5903039,127.9993574",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 81,
+    "name": "民俗資料博物館",
+    "googleMapsUrl": "https://maps.app.goo.gl/rFGVBsTmbrHgWpCy6",
+    "resolvedUrl": "https://www.google.com/maps/place/%E6%B0%91%E4%BF%97%E8%B3%87%E6%96%99%E5%8D%9A%E7%89%A9%E9%A4%A8/@26.6147264,128.0094609,17.22z/data=!4m6!3m5!1s0x34e4567bb2d31aab:0xe6a9db76f5ea85f4!8m2!3d26.6131068!4d128.0129642!16s%2Fg%2F1thx6bxs?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=09937123-8642-4062-ad39-b75107f22699",
+    "distanceFromHitohakoMeters": 3844,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6131068,128.0129642",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 84,
+    "name": "EGGダイビング",
+    "googleMapsUrl": "https://maps.app.goo.gl/dnwTTzKufZgrj6eM8",
+    "resolvedUrl": "https://www.google.com/maps/place/EGG%E3%83%80%E3%82%A4%E3%83%93%E3%83%B3%E3%82%B0/@26.5976585,127.9710113,14.47z/data=!4m7!3m6!1s0x34e455e78e43d247:0x1cf4177a2c82485d!8m2!3d26.602277!4d127.9990838!15sChXjgqLjgq_jg4bjgqPjg5Pjg4bjgqNaFyIV44Ki44Kv44OG44Kj44OT44OG44KjkgEJZGl2ZV9zaG9wmgEjQ2haRFNVaE5NRzluUzBWSlEwRm5TVVJsT1hOdExVUlJFQUXgAQD6AQUItQEQFw!16s%2Fg%2F11dx92rybl?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=632ed405-4231-49f7-b1d3-168db7f13788",
+    "distanceFromHitohakoMeters": 2013,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.602277,127.9990838",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 87,
+    "name": "轟の滝",
+    "googleMapsUrl": "https://maps.app.goo.gl/7UKstVMwURVTDbSg7",
+    "resolvedUrl": "https://www.google.com/maps/place/%E8%BD%9F%E3%81%AE%E6%BB%9D/@26.562261,127.9676934,14z/data=!3m1!4b1!4m6!3m5!1s0x34e455656852d87d:0xa4d45529a8ac35c7!8m2!3d26.5622629!4d127.9882931!16s%2Fg%2F11g8y47xlt?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=bee44c08-20fe-43e4-b5a8-ea01f80169e1",
+    "distanceFromHitohakoMeters": 3110,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5622629,127.9882931",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 88,
+    "name": "羽地ダム",
+    "googleMapsUrl": "https://maps.app.goo.gl/6VBSdh7bQmx7ig7ZA",
+    "resolvedUrl": "https://www.google.com/maps/place/%E7%BE%BD%E5%9C%B0%E3%83%80%E3%83%A0/@26.6073336,128.018185,17z/data=!4m7!3m6!1s0x34e4542a44e47833:0x39ebc45f13c43b45!8m2!3d26.6073881!4d128.0220029!15sCgznvr3ot6_jg4Djg6CSAQR3ZWly4AEA!16s%2Fm%2F0h1g5tq?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=417b2ddc-df07-47ff-b05b-344afbddc4c1",
+    "distanceFromHitohakoMeters": 4226,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6073881,128.0220029",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 89,
+    "name": "百年古家 大家 うふやー",
+    "googleMapsUrl": "https://maps.app.goo.gl/t75Hpjq9T6EkEHvA9",
+    "resolvedUrl": "https://www.google.com/maps/place/%E7%99%BE%E5%B9%B4%E5%8F%A4%E5%AE%B6+%E5%A4%A7%E5%AE%B6+%E3%81%86%E3%81%B5%E3%82%84%E3%83%BC/@26.6217725,127.9514009,14.05z/data=!4m6!3m5!1s0x34e4ff4cb9b910f1:0x6c5682a23a94e475!8m2!3d26.6209963!4d127.9636717!16s%2Fg%2F11bxbbm4b6?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=b6dda981-62b7-4938-a23d-9e402d193e14",
+    "distanceFromHitohakoMeters": 4007,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.6209963,127.9636717",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 94,
+    "name": "むちぐすい",
+    "googleMapsUrl": "https://maps.app.goo.gl/DMhYyQsMzePEjAN99",
+    "resolvedUrl": "https://www.google.com/maps/place/%E3%81%AC%E3%81%A1%E3%81%90%E3%81%99%E3%81%84/@26.5514739,127.9677914,17.38z/data=!4m6!3m5!1s0x34e4fff0492dec35:0x29effad98cef57da!8m2!3d26.5518796!4d127.9694102!16s%2Fg%2F1tdqldg2?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=1521cd36-2359-455c-95fa-4c04b102015d",
+    "distanceFromHitohakoMeters": 4487,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5518796,127.9694102",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 95,
+    "name": "名護曲金満神社",
+    "googleMapsUrl": "https://maps.app.goo.gl/H7H2tB42J2ceT8kn7",
+    "resolvedUrl": "https://www.google.com/maps/place/%E5%90%8D%E8%AD%B7%E6%9B%B2%E9%87%91%E6%BA%80%E7%A5%9E%E7%A4%BE/@26.5511954,127.9652849,17z/data=!3m1!4b1!4m6!3m5!1s0x34e4ff15af10c53d:0xccdfc29dd0db9596!8m2!3d26.5511954!4d127.9678598!16s%2Fg%2F11rzfv3c9f?entry=tts&g_ep=EgoyMDI2MDQxMy4wIPu8ASoASAFQAw%3D%3D&skid=1d4ad093-52af-4b6d-a3f1-b8abf073c536",
+    "distanceFromHitohakoMeters": 4611,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5511954,127.9678598",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 97,
+    "name": "21世紀の森ビーチ",
+    "googleMapsUrl": "https://maps.app.goo.gl/iCWa69YgNiMcbpsCA",
+    "resolvedUrl": "https://www.google.com/maps/place/21%E4%B8%96%E7%B4%80%E3%81%AE%E6%A3%AE%E3%83%93%E3%83%BC%E3%83%81/@26.5913094,127.9605532,15z/data=!4m6!3m5!1s0x34e4ff65a9d284d1:0xfe48cfb38199b34b!8m2!3d26.5913125!4d127.9693125!16s%2Fg%2F1thxszl9?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=bcb4c94d-6bb0-486b-9cd7-d055b5735487",
+    "distanceFromHitohakoMeters": 1489,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5913125,127.9693125",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 98,
+    "name": "パイ工房おしゃれ",
+    "googleMapsUrl": "https://maps.app.goo.gl/qTfu3kNaWRPL6LCn8",
+    "resolvedUrl": "https://www.google.com/maps/place/%E3%83%91%E3%82%A4%E5%B7%A5%E6%88%BF%E3%81%8A%E3%81%97%E3%82%83%E3%82%8C/@26.5977156,127.962295,17z/data=!4m6!3m5!1s0x34e4ff69410d1417:0xdf546a7e1a1e0428!8m2!3d26.5977193!4d127.9636632!16s%2Fg%2F1tzglzts?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=7c68d48d-546b-467f-9c85-09a2b396357a",
+    "distanceFromHitohakoMeters": 2216,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5977193,127.9636632",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 99,
+    "name": "尚風亭",
+    "googleMapsUrl": "https://maps.app.goo.gl/pCaNmvjYPbW2HBVu7",
+    "resolvedUrl": "https://www.google.com/maps/place/%E5%B0%9A%E9%A2%A8%E4%BA%AD/@26.5979267,127.9622843,17z/data=!4m6!3m5!1s0x34e4ff68ff0ee98d:0x8c7603353fae127a!8m2!3d26.5985775!4d127.9654083!16s%2Fg%2F1tgb52y2?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=0967eba2-fa09-4df9-bf5f-7378d979c41c",
+    "distanceFromHitohakoMeters": 2099,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5985775,127.9654083",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": 100,
+    "name": "味いちもんめ",
+    "googleMapsUrl": "https://maps.app.goo.gl/KbRmFpLrQWavfUff6",
+    "resolvedUrl": "https://www.google.com/maps/place/%E5%91%B3%E3%81%84%E3%81%A1%E3%82%82%E3%82%93%E3%82%81/@26.5973727,127.9610011,17z/data=!4m6!3m5!1s0x34e4ff695021ba61:0x192c066a6106844!8m2!3d26.5974083!4d127.9632129!16s%2Fg%2F1tqchzcj?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=a21d2832-d0d7-48ef-8d4e-3e8af65705dd",
+    "distanceFromHitohakoMeters": 2245,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5974083,127.9632129",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": null,
+    "name": "JAファーマーズマーケットやんばる",
+    "googleMapsUrl": "https://maps.app.goo.gl/5aBH87YwrefXf2r46",
+    "resolvedUrl": "https://www.google.com/maps/place/%EF%BC%AA%EF%BC%A1%E3%83%95%E3%82%A1%E3%83%BC%E3%83%9E%E3%83%BC%E3%82%BA%E3%83%9E%E3%83%BC%E3%82%B1%E3%83%83%E3%83%88%E3%82%84%E3%82%93%E3%81%B0%E3%82%8B/@26.5979399,127.9659371,16.41z/data=!4m6!3m5!1s0x34e4ff5d672d9033:0xe59a8a3a0fdc8a81!8m2!3d26.600282!4d127.969161!16s%2Fg%2F1v41y5y6?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=e7cbdd26-5ca8-4607-9189-9d0033aabe06",
+    "distanceFromHitohakoMeters": 1884,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.600282,127.969161",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  },
+  {
+    "no": null,
+    "name": "白川商店",
+    "googleMapsUrl": "https://maps.app.goo.gl/aWiiPrV549Wkc2Uc6",
+    "resolvedUrl": "https://www.google.com/maps/place/%E7%99%BD%E5%B7%9D%E5%95%86%E5%BA%97+%E5%90%8D%E8%AD%B7%E5%BA%97/@26.5979399,127.9659371,16z/data=!4m6!3m5!1s0x34e4ff00407209ab:0xd911647e57f7dab5!8m2!3d26.5982837!4d127.9752279!16s%2Fg%2F11xdh357p9?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=748b3655-a74e-4e05-a54a-5a322c503fae",
+    "distanceFromHitohakoMeters": 1283,
+    "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5982837,127.9752279",
+    "reason": "ヒトハコから1000m以上離れており、徒歩回遊エリア外のため"
+  }
+]

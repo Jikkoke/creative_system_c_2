@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# creative_system_c
 
-## Getting Started
+名護商店街周辺スポットを表示する Next.js アプリです。
 
-First, run the development server:
+## スポットデータ更新
+
+今回のスポット更新は `data/nago_spot.xlsx` を正として行います。
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run import:spots
+npm run check:spots
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`npm run import:spots` では以下を行います。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `data/nago_spot.xlsx` を読み込む
+- `data/nago_spot_resolved.json` にある Google Maps 展開URLを参照する
+- 座標は `!3d<lat>!4d<lng>` を最優先で採用する
+- `@lat,lng` しか取れない場合は `data/spots.json` に入れず `data/unresolved-spots.json` へ出力する
+- ヒトハコから徒歩回遊しやすい範囲のスポットだけ `data/spots.json` に反映する
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`npm run check:spots` では以下を確認します。
 
-## Learn More
+- `data/spots.json` の ID / category / 緯度経度
+- `food` / `shop` スポットの `googleMapsUrl`
+- `coordinateSource` の記録有無
+- 旧名称 `名護十字路商店連合` / `名護十字路商店連合会` の残存有無
+- 同一座標スポットの検出 (`data/duplicate-coordinates.json`)
 
-To learn more about Next.js, take a look at the following resources:
+## 出力ファイル
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `data/spots.json`
+- `data/nago_spot_resolved.json`
+- `data/unresolved-spots.json`
+- `data/excluded-spots.json`
+- `data/duplicate-map-urls.json`
+- `data/duplicate-coordinates.json`
