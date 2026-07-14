@@ -1331,6 +1331,7 @@ export default function HomePage() {
                       >
                         クリア
                       </button>
+                      
                     </div>
                     <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
                       {tripSpots.map((s, i) => (
@@ -1437,6 +1438,14 @@ export default function HomePage() {
                               {formatDistanceToWalk(distMeters)}
                             </p>
                           </button>
+                          <button
+                    onClick={handleReset}
+                    aria-label="最初の画面に戻る"
+                    className="w-full py-3 rounded-2xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 active:scale-95 transition-all flex items-center justify-center gap-2"
+                  >
+                    🏠 最初の画面に戻る
+                  </button>
+                </div>
                         </div>
                       );
                     })}
