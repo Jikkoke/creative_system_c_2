@@ -1007,13 +1007,23 @@ export default function HomePage() {
           {/* 📌 【上部固定エリア】 */}
           <div className="shrink-0 bg-white z-10 pb-1">
             {/* 駐車場ステータス */}
-           <button
+          <button
               onClick={() => {
-                // ピンの位置へマップの中心を移動し、ズームする
-                if (mapRef.current) {
-                  mapRef.current.panTo(NAGO_PARKING);
-                  mapRef.current.setZoom(17); // 少し近めにズーム
-                }
+                // 駐車場を目的地(スポット)として設定し、アプリ内のルート案内モードを起動する
+                setStatus('completed');
+                setSelectedSpot({
+                  id: 'nago-market-parking-route',
+                  category: 'parking',
+                  name: '名護市営市場 駐車場',
+                  lat: NAGO_PARKING.lat,
+                  lng: NAGO_PARKING.lng,
+                  emoji: '🅿️',
+                  desc: '商店街をご利用の際はこちらの市営駐車場をご利用ください。',
+                  tag: '駐車場'
+                });
+                setShowSpotDetail(false);
+                setIsTripActive(false);
+                setIsSpotNavigating(true); // ルーティング処理(useEffect)を発火させる
               }}
               className={`w-full flex items-center justify-between px-3 py-1.5 mb-2 rounded-xl text-[10px] font-bold border transition-transform active:scale-95 ${
                 parkingStatus === 'full'
@@ -1025,15 +1035,15 @@ export default function HomePage() {
             >
               <div className="flex items-center gap-1.5 truncate">
                 {parkingStatus === 'loading' && <><span className="animate-spin inline-block">⏳</span> 駐車場確認中...</>}
-                {/* 修正1: 文言の変更 */}
                 {parkingStatus === 'open' && <>🟢 名護市営市場 駐車場 空きあり</>}
                 {parkingStatus === 'full' && <>🚨 名護市営市場 駐車場 満車（臨時Pへ）</>}
                 {parkingStatus === 'error' && <>⚠️ 駐車場情報 取得エラー</>}
               </div>
-              {/* マップ移動を促すUI */}
+              
+              {/* ルーティング起動を促すUI */}
               {(parkingStatus === 'open' || parkingStatus === 'full') && (
                 <span className="shrink-0 bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded text-[9px]">
-                  マップで確認 📍
+                  ルート案内 🗺️
                 </span>
               )}
               {parkingStatus === 'error' && (
@@ -1045,7 +1055,6 @@ export default function HomePage() {
                 </div>
               )}
             </button>
-            
             
             {/* ステップインジケーター */}
             {(() => {
