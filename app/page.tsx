@@ -812,17 +812,28 @@ export default function HomePage() {
               />
             )}
 
-            {isDisasterMode &&
-              SHELTERS.map((s) => (
+           {!isDisasterMode && (
+              <>
+                {/* 駐車場のピン（マーカー）本体 */}
                 <Marker
-                  key={s.id}
-                  position={{ lat: s.lat, lng: s.lng }}
-                  title={`${s.name} ${s.address}`}
-                  icon={buildIcon('#dc2626')}
-                  label={{ text: '避', color: 'white', fontWeight: 'bold', fontSize: '12px' }}
+                  position={NAGO_PARKING}
+                  icon={buildIcon('#16a34a')}
+                  label={{ text: 'P', color: 'white', fontWeight: 'bold', fontSize: '10px' }}
                 />
-              ))}
-
+                
+                {/* 常に開きっぱなしになる吹き出し（InfoWindow） */}
+                <InfoWindow
+                  position={NAGO_PARKING}
+                  options={{ 
+                    disableAutoPan: true // 画面読み込み時に勝手にカメラが移動するのを防ぐ
+                  }}
+                >
+                  <div className="text-xs font-bold text-emerald-700 whitespace-nowrap">
+                    🅿️ 名護市営市場 駐車場
+                  </div>
+                </InfoWindow>
+              </>
+            )}
             {status === 'completed' && !isDisasterMode && (
               <>
                 {SPOTS_BY_CATEGORY.parking.map((spot) => {
@@ -996,16 +1007,13 @@ export default function HomePage() {
           {/* 📌 【上部固定エリア】 */}
           <div className="shrink-0 bg-white z-10 pb-1">
             {/* 駐車場ステータス */}
-            <button
+           <button
               onClick={() => {
-                // ピン打ち・中心移動のシミュレート
+                // ピンの位置へマップの中心を移動し、ズームする
                 if (mapRef.current) {
                   mapRef.current.panTo(NAGO_PARKING);
-                  mapRef.current.setZoom(16);
+                  mapRef.current.setZoom(17); // 少し近めにズーム
                 }
-                // スマホ等でGoogle Mapsアプリ(経路案内)を直接起動
-                const googleMapUrl = `https://www.google.com/maps/dir/?api=1&destination=${NAGO_PARKING.lat},${NAGO_PARKING.lng}`;
-                window.open(googleMapUrl, '_blank');
               }}
               className={`w-full flex items-center justify-between px-3 py-1.5 mb-2 rounded-xl text-[10px] font-bold border transition-transform active:scale-95 ${
                 parkingStatus === 'full'
@@ -1022,15 +1030,15 @@ export default function HomePage() {
                 {parkingStatus === 'full' && <>🚨 名護市営市場 駐車場 満車（臨時Pへ）</>}
                 {parkingStatus === 'error' && <>⚠️ 駐車場情報 取得エラー</>}
               </div>
-              {/* ナビ起動を促すUI */}
+              {/* マップ移動を促すUI */}
               {(parkingStatus === 'open' || parkingStatus === 'full') && (
                 <span className="shrink-0 bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded text-[9px]">
-                  ナビ ↗
+                  マップで確認 📍
                 </span>
               )}
               {parkingStatus === 'error' && (
                 <div
-                  onClick={(e) => { e.stopPropagation(); retryParking(); }} // イベントの伝播を止めて再試行のみ実行
+                  onClick={(e) => { e.stopPropagation(); retryParking(); }}
                   className="shrink-0 bg-gray-200 hover:bg-gray-300 px-2 py-0.5 rounded text-[9px] transition-colors"
                 >
                   再試行
