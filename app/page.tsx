@@ -1438,7 +1438,8 @@ export default function HomePage() {
                               {formatDistanceToWalk(distMeters)}
                             </p>
                           </button>
-                          <button
+                         <div className="mt-4 pt-4 border-t border-gray-100">
+                  <button
                     onClick={handleReset}
                     aria-label="最初の画面に戻る"
                     className="w-full py-3 rounded-2xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 active:scale-95 transition-all flex items-center justify-center gap-2"
@@ -1446,7 +1447,8 @@ export default function HomePage() {
                     🏠 最初の画面に戻る
                   </button>
                 </div>
-                        </div>
+                </div>
+                       
                       );
                     })}
                   </div>
