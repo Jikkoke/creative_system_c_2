@@ -1655,12 +1655,12 @@ export default function HomePage() {
                   </div>
                 )}
 
-                <button
-                  onClick={handleEndSpotNavigation}
-                  aria-label="案内を終了して一覧に戻る"
+               <button
+                  onClick={handleReset}
+                  aria-label="案内を終了して最初の画面に戻る"
                   className="w-full py-4 rounded-2xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 active:scale-95 transition-all"
                 >
-                  案内を終了して一覧に戻る
+                  案内を終了して最初の画面に戻る
                 </button>
               </div>
             )}
