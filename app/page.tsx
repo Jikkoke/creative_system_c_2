@@ -1438,7 +1438,14 @@ export default function HomePage() {
                               {formatDistanceToWalk(distMeters)}
                             </p>
                           </button>
-                         <div className="mt-4 pt-4 border-t border-gray-100">
+                        
+                </div>
+                       
+                      );
+                    })}
+                  </div>
+                )}
+                <div className="mt-4 pt-4 border-t border-gray-100">
                   <button
                     onClick={handleReset}
                     aria-label="最初の画面に戻る"
@@ -1447,12 +1454,6 @@ export default function HomePage() {
                     🏠 最初の画面に戻る
                   </button>
                 </div>
-                </div>
-                       
-                      );
-                    })}
-                  </div>
-                )}
               </div>
             )}
 
