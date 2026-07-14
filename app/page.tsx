@@ -1550,14 +1550,7 @@ export default function HomePage() {
             {/* D. スポット詳細 */}
             {status === 'completed' && showSpotDetail && selectedSpot && (
               <div key="completed-detail" className="animate-panel-enter">
-                <button
-                  onClick={() => setShowSpotDetail(false)}
-                  aria-label="スポット一覧に戻る"
-                  className="text-gray-500 text-sm mb-4 flex items-center gap-1 hover:text-gray-700 transition-colors"
-                >
-                  ← 一覧に戻る
-                </button>
-
+                
                 <div className="w-full h-40 bg-gradient-to-br from-blue-100 to-indigo-200 rounded-2xl mb-4 overflow-hidden flex items-center justify-center">
                   {selectedSpot.imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -1633,6 +1626,13 @@ export default function HomePage() {
                   className="w-full py-4 rounded-2xl bg-blue-600 text-white font-bold shadow-lg hover:bg-blue-700 active:scale-95 transition-all"
                 >
                   🗺️ ここへのルートを案内
+                </button>
+                <button
+                  onClick={() => setShowSpotDetail(false)}
+                  aria-label="スポット一覧に戻る"
+                  className="w-full py-3 mt-2 rounded-2xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 active:scale-95 transition-all"
+                >
+                  ← 一覧に戻る
                 </button>
               </div>
             )}
