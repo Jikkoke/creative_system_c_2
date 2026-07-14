@@ -996,30 +996,48 @@ export default function HomePage() {
           {/* 📌 【上部固定エリア】 */}
           <div className="shrink-0 bg-white z-10 pb-1">
             {/* 駐車場ステータス */}
-            <div
-              className={`flex items-center justify-between px-3 py-1.5 mb-2 rounded-xl text-[10px] font-bold border ${
+            <button
+              onClick={() => {
+                // ピン打ち・中心移動のシミュレート
+                if (mapRef.current) {
+                  mapRef.current.panTo(NAGO_PARKING);
+                  mapRef.current.setZoom(16);
+                }
+                // スマホ等でGoogle Mapsアプリ(経路案内)を直接起動
+                const googleMapUrl = `https://www.google.com/maps/dir/?api=1&destination=${NAGO_PARKING.lat},${NAGO_PARKING.lng}`;
+                window.open(googleMapUrl, '_blank');
+              }}
+              className={`w-full flex items-center justify-between px-3 py-1.5 mb-2 rounded-xl text-[10px] font-bold border transition-transform active:scale-95 ${
                 parkingStatus === 'full'
-                  ? 'bg-red-50 border-red-200 text-red-700'
+                  ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'
                   : parkingStatus === 'open'
-                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'
                   : 'bg-gray-50 border-gray-200 text-gray-500'
               }`}
             >
               <div className="flex items-center gap-1.5 truncate">
                 {parkingStatus === 'loading' && <><span className="animate-spin inline-block">⏳</span> 駐車場確認中...</>}
-                {parkingStatus === 'open' && <>🟢 市営駐車場 空きあり</>}
-                {parkingStatus === 'full' && <>🚨 市営駐車場 満車（臨時Pへ）</>}
+                {/* 修正1: 文言の変更 */}
+                {parkingStatus === 'open' && <>🟢 名護市営市場 駐車場 空きあり</>}
+                {parkingStatus === 'full' && <>🚨 名護市営市場 駐車場 満車（臨時Pへ）</>}
                 {parkingStatus === 'error' && <>⚠️ 駐車場情報 取得エラー</>}
               </div>
+              {/* ナビ起動を促すUI */}
+              {(parkingStatus === 'open' || parkingStatus === 'full') && (
+                <span className="shrink-0 bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded text-[9px]">
+                  ナビ ↗
+                </span>
+              )}
               {parkingStatus === 'error' && (
-                <button
-                  onClick={retryParking}
+                <div
+                  onClick={(e) => { e.stopPropagation(); retryParking(); }} // イベントの伝播を止めて再試行のみ実行
                   className="shrink-0 bg-gray-200 hover:bg-gray-300 px-2 py-0.5 rounded text-[9px] transition-colors"
                 >
                   再試行
-                </button>
+                </div>
               )}
-            </div>
+            </button>
+            
             
             {/* ステップインジケーター */}
             {(() => {
