@@ -1211,6 +1211,14 @@ export default function HomePage() {
                     ? '駐車場に到着・お店へ向かう'
                     : '駐車場到着後に有効になります（100m以内）'}
                 </button>
+                
+                <button
+                  onClick={handleReset}
+                  aria-label="店舗選択に戻る"
+                  className="w-full py-3 mt-2 rounded-2xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 active:scale-95 transition-all"
+                >
+                  ← 店舗選択に戻る
+                </button>
               </div>
             )}
 
@@ -1256,6 +1264,13 @@ export default function HomePage() {
                   {isNearDestination
                     ? `${selectedGoodsSpot.name}に到着・Chura Freshを受け取った`
                     : 'お店到着後に有効になります（100m以内）'}
+                </button>
+                 <button
+                  onClick={handleReset}
+                  aria-label="店舗選択に戻る"
+                  className="w-full py-3 mt-2 rounded-2xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 active:scale-95 transition-all"
+                >
+                  ← 店舗選択に戻る
                 </button>
               </div>
             )}
