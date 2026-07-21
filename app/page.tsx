@@ -265,7 +265,7 @@ export default function HomePage() {
   // UI 状態
   const [status, setStatus] = useState<Status>('initial');
   const [isDisasterMode, setIsDisasterMode] = useState(false);
-  const [showChuraFreshInfo, setShowChuraFreshInfo] = useState(false);
+  const [showChuraFreshInfo, setShowChuraFreshInfo] = useState(true);
   const [activeGenre, setActiveGenre] = useState<Genre>('food');
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
   const [showSpotDetail, setShowSpotDetail] = useState(false);
@@ -1751,7 +1751,7 @@ export default function HomePage() {
                 onClick={() => setShowChuraFreshInfo(false)}
                 className="w-full py-4 rounded-2xl bg-blue-600 text-white font-bold shadow-lg hover:bg-blue-700 active:scale-95 transition-all"
               >
-                閉じる
+                引き換え可能なスポットを選択・案内する
               </button>
             </div>
           </div>
