@@ -1044,6 +1044,7 @@
       "desc": "名護夏祭り2026の会場です",
       "tag": "#イベント",
       "rank": "C",
+      "goodsPickup": true,
       "googleMapsUrl": "https://maps.app.goo.gl/cZEkp5Y8gmVLEFS86",
       "resolvedUrl": "https://www.google.com/maps/place/SEALIVING+CAFE/@26.5904662,127.9877855,17.6z/data=!4m6!3m5!1s0x34e45592781c1a45:0xcfc77c920d3914b1!8m2!3d26.5906737!4d127.9891898!16s%2Fg%2F11dfsww72w?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=0cbe4dac-acab-41f9-9bc9-973c06d0a1c0",
       "coordinateSource": "google_maps_url_3d4d",
