@@ -136,6 +136,36 @@
         "checkedAt": "2026-07-08"
       }
     },
+
+    
+     {
+      "id": "f12",
+      "category": "food",
+      "name": "名護漁港",
+      "lat": 26.5874,
+      "lng": 127.98181,
+      "emoji": "🍰",
+      "desc": "名護夏祭り2026のイベント会場",
+      "tag": "#食事",
+      "address": "日本、〒905-0013 沖縄県名護市城3丁目9",
+      "goodsPickup": true,
+      "hours": "24時間営業",
+      "googleMapsUrl": "https://maps.google.com/?cid=3165901932046384792&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5893683,127.98393180000001",
+      "openingHours": {
+        "source": "google_places",
+        "weekdayText": [
+          "24時間営業"
+        ],
+        "businessStatus": "OPERATIONAL",
+        "checkedAt": "2026-07-08"
+      },
+      "coordinateSource": "google_places_location",
+      "placeId": "ChIJEwlYrY5V5DQRmP5YlQiL7ys"
+    },
+
+    
+    
     {
       "id": "nago-001",
       "category": "food",
@@ -1034,37 +1064,5 @@
       },
       "address": "日本、〒905-0012 沖縄県名護市大東２丁目３−１"
     },
-    {
-      "id": "nago-gyoko",
-      "category": "park",
-      "name": "名護漁港",
-      "lat": 26.5874,
-      "lng": 127.98181,
-      "emoji": "☕",
-      "desc": "名護夏祭り2026の会場です",
-      "tag": "#イベント",
-      "rank": "C",
-      "goodsPickup": true,
-      "googleMapsUrl": "https://maps.app.goo.gl/cZEkp5Y8gmVLEFS86",
-      "resolvedUrl": "https://www.google.com/maps/place/SEALIVING+CAFE/@26.5904662,127.9877855,17.6z/data=!4m6!3m5!1s0x34e45592781c1a45:0xcfc77c920d3914b1!8m2!3d26.5906737!4d127.9891898!16s%2Fg%2F11dfsww72w?entry=tts&g_ep=EgoyMDI2MDQwOC4wIPu8ASoASAFQAw%3D%3D&skid=0cbe4dac-acab-41f9-9bc9-973c06d0a1c0",
-      "coordinateSource": "google_maps_url_3d4d",
-      "verificationGoogleMapsUrl": "https://www.google.com/maps/search/?api=1&query=26.5906737,127.9891898",
-      "hours": "月曜日: 定休日 / 火曜日: 14時00分～16時30分 / 水曜日: 14時00分～16時30分 / 木曜日: 定休日 / 金曜日: 14時00分～16時30分 / 土曜日: 14時00分～16時30分 / 日曜日: 14時00分～16時30分",
-      "openingHours": {
-        "source": "google_places",
-        "weekdayText": [
-          "月曜日: 24時間営業",
-          "火曜日: 24時間営業",
-          "水曜日: 24時間営業",
-          "木曜日: 24時間営業",
-          "金曜日: 24時間営業",
-          "土曜日: 24時間営業",
-          "日曜日: 24時間営業"
-        ],
-        "businessStatus": "OPERATIONAL",
-        "checkedAt": "2026-07-08"
-      },
-      "address": "日本、〒905-0016 沖縄県名護市城3丁目9"
-    }
   ]
 }
